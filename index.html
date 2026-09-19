@@ -877,9 +877,10 @@
             }
         }
 
-        document.getElementById('join-btn').addEventListener('click', () => {
+        function doJoin() {
             const name = usernameInput.value.trim();
             if(!name) return showToast('กรุณาใส่ชื่อก่อนเข้าเล่น!', 'warning');
+            if(document.getElementById('join-btn').style.display === 'none') return; // ชื่อแอดมิน ไม่ควรเข้าร่วมเกม
 
             currentUser = name;
             localStorage.setItem('quiz_username', currentUser);
@@ -894,7 +895,18 @@
                 audioUnlock.volume = 0;
                 audioUnlock.play().then(() => audioUnlock.volume = 1).catch(e => {});
                 showToast(`ยินดีต้อนรับ ${currentUser}!`, 'success');
+            })
+            .catch((err) => {
+                // เดิมโค้ดตรงนี้ไม่มี .catch() เลย ถ้า Firebase เขียนข้อมูลไม่ผ่าน (เช่น Database Rules
+                // ไม่อนุญาต หรือ databaseURL/เน็ตมีปัญหา) มันจะเงียบไปเฉยๆ กดปุ่มแล้วเหมือนไม่มีอะไรเกิดขึ้น
+                console.error('Join failed:', err);
+                showToast('เข้าร่วมเกมไม่สำเร็จ: ' + err.message, 'error');
             });
+        }
+
+        document.getElementById('join-btn').addEventListener('click', doJoin);
+        usernameInput.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') doJoin();
         });
 
         function monitorKick() {
