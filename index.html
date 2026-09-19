@@ -254,7 +254,7 @@
             <p style="text-align: center; color: var(--text-light); margin-bottom: 30px;">ขอแสดงความยินดีกับผู้ชนะ!</p>
             
             <div class="podium-container" id="podium-container">
-                </div>
+            </div>
             
             <div style="text-align: center; margin-top: 40px;">
                 <button id="back-to-lobby-btn" style="width: auto; padding: 10px 30px;">กลับสู่หน้ารอ</button>
@@ -266,19 +266,23 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, set, onValue, push, update, remove, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
 
+        // Firebase configuration ของใหม่
         const firebaseConfig = {
-            apiKey: "AIzaSyBHwvdnizI3PMwUGWsjtDUbGeqD80Ae1TE",
-            authDomain: "news-7d550.firebaseapp.com",
-            databaseURL: "https://news-7d550-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "news-7d550",
-            storageBucket: "news-7d550.firebasestorage.app",
-            messagingSenderId: "91286876651",
-            appId: "1:91286876651:web:1f0c5017b019c1b5f1e9ae"
+            apiKey: "AIzaSyAkZC9J3CNojWWCvkKlhZnR7GYiqsW5o2Q",
+            authDomain: "test-7f022.firebaseapp.com",
+            databaseURL: "https://test-7f022-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "test-7f022",
+            storageBucket: "test-7f022.firebasestorage.app",
+            messagingSenderId: "305764527371",
+            appId: "1:305764527371:web:2934dbf233804218d9060e",
+            measurementId: "G-9VD2T2727P"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const analytics = getAnalytics(app);
 
         // State Variables
         let currentUser = localStorage.getItem('quiz_username') || '';
