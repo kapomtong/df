@@ -124,11 +124,6 @@
 </head>
 <body>
 
-    <audio id="snd-tick" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-    <audio id="snd-correct" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
-    <audio id="snd-wrong" src="https://actions.google.com/sounds/v1/cartoon/slip_and_crash.ogg"></audio>
-    <audio id="snd-win" src="https://actions.google.com/sounds/v1/crowds/crowd_cheer.ogg"></audio>
-
     <div id="custom-toast">ข้อความแจ้งเตือน</div>
 
     <div id="pin-modal" class="modal-overlay">
@@ -156,7 +151,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                 <h3 style="margin: 0; color: var(--text-light);">ผู้เล่น: <span id="display-player-name" style="color: var(--primary);"></span></h3>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div id="streak-badge" class="streak-badge">🔥 คอมโบ x2</div>
+                    <div id="streak-badge" class="streak-badge">🔥 คอมโบ x2 (+10%)</div>
                     <h3 style="margin: 0; color: var(--text-light);">คะแนน: <span id="display-player-score" style="color: var(--success);">0</span></h3>
                 </div>
             </div>
@@ -169,7 +164,7 @@
             <div id="question-area" style="display: none;">
                 <div id="player-timer" class="timer-circle">20</div>
                 <h2 id="player-question-text" style="margin-bottom: 5px;">คำถาม?</h2>
-                <p id="player-question-points" style="text-align: center; color: var(--warning); font-weight: bold; margin-bottom: 15px;">(100 คะแนน)</p>
+                <p id="player-question-points" style="text-align: center; color: var(--warning); font-weight: bold; margin-bottom: 15px;">(สูงสุด 1000 คะแนน)</p>
                 <img id="player-question-img" class="question-image" src="" alt="">
                 <div class="options-grid">
                     <button class="option-btn" onclick="submitAnswer(1)" id="p-opt-1">ตัวเลือก 1</button>
@@ -211,8 +206,8 @@
                             </select>
                         </div>
                         <div>
-                            <span style="font-size: 12px; color: var(--primary);">คะแนน</span>
-                            <input type="number" id="q-points" value="100" min="1" style="margin-bottom: 0;">
+                            <span style="font-size: 12px; color: var(--primary);">คะแนนสูงสุด</span>
+                            <input type="number" id="q-points" value="1000" min="1" style="margin-bottom: 0;">
                         </div>
                         <div>
                             <span style="font-size: 12px; color: var(--primary);">เวลา (วินาที)</span>
@@ -268,7 +263,6 @@
         import { getDatabase, ref, set, onValue, push, update, remove, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
 
-        // Firebase configuration ของใหม่
         const firebaseConfig = {
             apiKey: "AIzaSyAkZC9J3CNojWWCvkKlhZnR7GYiqsW5o2Q",
             authDomain: "test-7f022.firebaseapp.com",
@@ -287,15 +281,18 @@
         // State Variables
         let currentUser = localStorage.getItem('quiz_username') || '';
         let currentScore = 0;
-        let currentStreak = 0; // เก็บค่าคอมโบ
+        let currentStreak = 0;
         let isAdmin = false;
         let activeQuestionId = null;
         let hasAnsweredCurrent = false;
         let mySelectedOption = null;
         let timerInterval = null;
         let isPodiumActive = false;
+        let myEarnedPointsThisRound = 0;
+        let mySpeedBonusThisRound = 0;
+        let myStreakBonusThisRound = 0;
 
-        // ================= UI & Sounds =================
+        // ================= UI Helpers =================
         const showToast = (msg, type = 'normal') => {
             const toast = document.getElementById('custom-toast');
             toast.textContent = msg;
@@ -310,14 +307,6 @@
         const switchScreen = (screenId) => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
-        };
-
-        const playSound = (id) => {
-            try {
-                const snd = document.getElementById(id);
-                snd.currentTime = 0;
-                snd.play().catch(e => console.log("รอผู้เล่นกดหน้าจอก่อนถึงเล่นเสียงได้"));
-            } catch(e){}
         };
 
         // ================= Login =================
@@ -344,16 +333,12 @@
             currentUser = name;
             localStorage.setItem('quiz_username', currentUser);
             
-            // สร้างข้อมูลลง DB พร้อมค่า streak = 0
             set(ref(db, 'players/' + currentUser), { name: currentUser, score: 0, streak: 0, lastActive: Date.now() })
             .then(() => {
                 document.getElementById('display-player-name').textContent = currentUser;
                 switchScreen('player-screen');
                 listenToGameState();
                 monitorKick();
-                // เล่นเสียง Tick เบาๆ เพื่อปลดล็อค Audio ในมือถือ
-                let audioUnlock = document.getElementById('snd-tick');
-                audioUnlock.volume = 0; audioUnlock.play().then(()=>audioUnlock.volume=1).catch(e=>{});
                 showToast(`ยินดีต้อนรับ ${currentUser}!`, 'success');
             });
         });
@@ -369,11 +354,11 @@
                     currentStreak = snapshot.val().streak || 0;
                     document.getElementById('display-player-score').textContent = currentScore;
                     
-                    // แสดงป้ายคอมโบ
                     const badge = document.getElementById('streak-badge');
                     if(currentStreak >= 2) {
+                        const boostPct = currentStreak >= 3 ? 20 : 10;
                         badge.style.display = 'block';
-                        badge.textContent = `🔥 คอมโบ x${currentStreak}`;
+                        badge.textContent = `🔥 คอมโบ x${currentStreak} (+${boostPct}%)`;
                     } else {
                         badge.style.display = 'none';
                     }
@@ -390,7 +375,7 @@
         document.getElementById('submit-pin-btn').addEventListener('click', () => {
             if (document.getElementById('admin-pin').value === '010203') {
                 isAdmin = true; document.getElementById('pin-modal').classList.remove('active');
-                switchScreen('admin-screen'); initAdminDashboard(); listenToGameState(); // แอดมินก็ฟังสถานะโพเดียมด้วย
+                switchScreen('admin-screen'); initAdminDashboard(); listenToGameState();
                 showToast('เข้าสู่ระบบแอดมินสำเร็จ', 'success');
             } else { showToast('PIN ไม่ถูกต้อง!', 'error'); }
         });
@@ -467,7 +452,7 @@
                 text, img: document.getElementById('q-img').value.trim(),
                 opt1: document.getElementById('q-opt1').value.trim(), opt2: document.getElementById('q-opt2').value.trim(),
                 opt3: document.getElementById('q-opt3').value.trim(), opt4: document.getElementById('q-opt4').value.trim(),
-                correct, points: parseInt(document.getElementById('q-points').value) || 100,
+                correct, points: parseInt(document.getElementById('q-points').value) || 1000,
                 timeLimit: parseInt(document.getElementById('q-time').value) || 20
             }).then(() => {
                 showToast('บันทึกลงคิวสำเร็จ!', 'success');
@@ -482,7 +467,7 @@
                 const data = snapshot.val(); data.active = true; data.questionId = key;
                 data.showAnswer = false; data.endTime = Date.now() + (data.timeLimit * 1000);
                 
-                await set(ref(db, 'gameState'), { current: data, podium: false }); // รีเซ็ตโพเดียม
+                await set(ref(db, 'gameState'), { current: data, podium: false });
                 await remove(ref(db, 'questions/' + key));
                 showToast('ส่งคำถามแล้ว!', 'success');
             }
@@ -497,7 +482,6 @@
             set(ref(db, 'gameState/current'), { active: false });
         });
 
-        // ปุ่มใหม่: ประกาศผล Podium
         document.getElementById('trigger-podium-btn').addEventListener('click', () => {
             set(ref(db, 'gameState/current'), { active: false });
             update(ref(db, 'gameState'), { podium: true });
@@ -522,14 +506,11 @@
 
         // ================= Player & Global Logic =================
         function listenToGameState() {
-            // ฟังระบบโพเดียม
             onValue(ref(db, 'gameState/podium'), async (snapshot) => {
                 if(snapshot.exists() && snapshot.val() === true) {
                     isPodiumActive = true;
                     switchScreen('podium-screen');
-                    playSound('snd-win');
                     
-                    // ดึงคะแนนมาจัดอันดับ
                     const pSnap = await get(ref(db, 'players'));
                     let players = [];
                     if(pSnap.exists()) { pSnap.forEach(c => players.push(c.val())); }
@@ -538,8 +519,7 @@
                     const pContainer = document.getElementById('podium-container');
                     pContainer.innerHTML = '';
                     
-                    // สร้างแท่นตามลำดับ (ที่ 2, ที่ 1, ที่ 3)
-                    const order = [1, 0, 2]; // index ของ array (2nd, 1st, 3rd)
+                    const order = [1, 0, 2];
                     order.forEach(idx => {
                         if(players[idx]) {
                             const p = players[idx];
@@ -548,13 +528,12 @@
                                 <div class="podium-bar place-${placeNum}">
                                     <div class="podium-name">${p.name}</div>
                                     <div style="font-size:24px;">${placeNum === 1 ? '🥇' : placeNum === 2 ? '🥈' : '🥉'}</div>
-                                    <div class="podium-score">${p.score}</div>
+                                    <div class="podium-score">${p.score} คะแนน</div>
                                 </div>
                             `;
                         }
                     });
 
-                    // ยิงพลุกระดาษ
                     let duration = 3 * 1000;
                     let end = Date.now() + duration;
                     (function frame() {
@@ -568,9 +547,8 @@
                 }
             });
 
-            // ฟังระบบคำถามปัจจุบัน
             onValue(ref(db, 'gameState/current'), (snapshot) => {
-                if(isPodiumActive || isAdmin) return; // ถ้าแอดมินหรืออยู่หน้าโพเดียมไม่ต้องอัปเดต UI คำถาม
+                if(isPodiumActive || isAdmin) return;
 
                 const waitArea = document.getElementById('waiting-area');
                 const qArea = document.getElementById('question-area');
@@ -580,6 +558,7 @@
                     
                     if(activeQuestionId !== data.questionId) {
                         hasAnsweredCurrent = false; mySelectedOption = null; activeQuestionId = data.questionId;
+                        myEarnedPointsThisRound = 0; mySpeedBonusThisRound = 0; myStreakBonusThisRound = 0;
                         document.getElementById('answer-result-text').style.display = 'none';
                         document.querySelectorAll('.option-btn').forEach(btn => {
                             btn.className = 'option-btn'; btn.style.pointerEvents = "auto"; btn.disabled = false;
@@ -595,7 +574,6 @@
                             
                             if(timeLeft <= 5 && timeLeft > 0) {
                                 timerDisplay.classList.add('danger');
-                                playSound('snd-tick'); // เล่นเสียงติ๊กเวลาใกล้หมด
                             }
                             
                             if(timeLeft <= 0) {
@@ -606,7 +584,6 @@
                                     document.getElementById('answer-result-text').innerHTML = "หมดเวลา! ⏳<br><span style='font-size:14px;color:gray'>คอมโบถูกรีเซ็ต</span>";
                                     document.getElementById('answer-result-text').style.color = "var(--danger)";
                                     document.getElementById('answer-result-text').style.display = "block";
-                                    // หมดเวลา คอมโบพัง
                                     update(ref(db, 'players/' + currentUser), { streak: 0 });
                                 }
                             }
@@ -614,15 +591,18 @@
                     }
 
                     document.getElementById('player-question-text').textContent = data.text;
-                    document.getElementById('player-question-points').textContent = `(ข้อนี้ ${data.points || 100} คะแนน)`;
+                    document.getElementById('player-question-points').textContent = `(สูงสุด ${data.points || 1000} คะแนน)`;
                     const imgEl = document.getElementById('player-question-img');
                     if(data.img) { imgEl.src = data.img; imgEl.style.display = 'block'; } else { imgEl.style.display = 'none'; }
                     for(let i=1; i<=4; i++) document.getElementById(`p-opt-${i}`).textContent = data[`opt${i}`];
 
-                    qArea.dataset.correct = data.correct; qArea.dataset.points = data.points || 100;
+                    qArea.dataset.correct = data.correct; 
+                    qArea.dataset.points = data.points || 1000;
+                    qArea.dataset.timelimit = data.timeLimit || 20;
+                    qArea.dataset.endtime = data.endTime;
+                    
                     waitArea.style.display = 'none'; qArea.style.display = 'block';
 
-                    // เมื่อแอดมินกดเฉลย
                     if(data.showAnswer) {
                         clearInterval(timerInterval); lockButtons();
                         const correctNum = parseInt(data.correct);
@@ -636,14 +616,15 @@
                         });
 
                         if(mySelectedOption === correctNum) {
-                            let bonusText = currentStreak > 1 ? `<br><span style="font-size:14px;color:#f59e0b">🔥 โบนัสคอมโบ +${(currentStreak-1)*50}</span>` : '';
-                            resultText.innerHTML = `ตอบถูก! 🎉${bonusText}`;
+                            let streakInfo = myStreakBonusThisRound > 0 ? `<br><span style="font-size:14px;color:#f59e0b">🔥 โบนัสคอมโบ: +${myStreakBonusThisRound}</span>` : '';
+                            resultText.innerHTML = `ตอบถูกต้อง! 🎉<br>
+                                <span style="font-size:16px;color:var(--success)">+${myEarnedPointsThisRound} คะแนน</span>
+                                <br><span style="font-size:13px;color:gray">(คะแนนความเร็ว: ${mySpeedBonusThisRound})</span>
+                                ${streakInfo}`;
                             resultText.style.color = "var(--success)";
-                            playSound('snd-correct');
                         } else if(mySelectedOption) {
-                            resultText.textContent = "ตอบผิด! 😢";
+                            resultText.textContent = "ตอบผิด! 😢 (+0 คะแนน)";
                             resultText.style.color = "var(--danger)";
-                            playSound('snd-wrong');
                         }
                     }
 
@@ -668,18 +649,39 @@
 
             const qArea = document.getElementById('question-area');
             const correctNum = parseInt(qArea.dataset.correct);
-            const basePoints = parseInt(qArea.dataset.points) || 100;
+            const maxPoints = parseInt(qArea.dataset.points) || 1000;
+            const timeLimit = parseInt(qArea.dataset.timelimit) || 20;
+            const endTime = parseInt(qArea.dataset.endtime);
 
             if (selectedNumber === correctNum) {
-                // คำนวณคอมโบ: ตอบถูก streak + 1, โบนัส = (streak-1) * 50
-                const newStreak = currentStreak + 1;
-                const bonus = newStreak > 1 ? (newStreak - 1) * 50 : 0;
-                const totalEarned = basePoints + bonus;
+                // คำนวณคะแนนความเร็ว
+                const now = Date.now();
+                const timeLeftSec = Math.max(0, (endTime - now) / 1000);
+                const timeRatio = Math.min(1, timeLeftSec / timeLimit);
                 
-                update(ref(db, 'players/' + currentUser), { score: currentScore + totalEarned, streak: newStreak });
+                // ยิ่งตอบเร็วได้คะแนนใกล้เคียง maxPoints (ตอบช้าลงจะลดลงเรื่อยๆ ต่ำสุดอยู่ที่ 50% ของคะแนนเต็ม)
+                const speedBaseScore = Math.round(maxPoints * (0.5 + (0.5 * timeRatio)));
+
+                // คำนวณโบนัสคอมโบ ( streak 2 ได้ +10%, streak >= 3 ได้ +20% )
+                const newStreak = currentStreak + 1;
+                let boostPercent = 0;
+                if(newStreak === 2) boostPercent = 0.10;
+                else if(newStreak >= 3) boostPercent = 0.20;
+
+                const streakBonusScore = Math.round(speedBaseScore * boostPercent);
+                const totalEarned = speedBaseScore + streakBonusScore;
+
+                myEarnedPointsThisRound = totalEarned;
+                mySpeedBonusThisRound = speedBaseScore;
+                myStreakBonusThisRound = streakBonusScore;
+
+                update(ref(db, 'players/' + currentUser), { 
+                    score: currentScore + totalEarned, 
+                    streak: newStreak 
+                });
                 showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'success');
             } else {
-                // ตอบผิด คอมโบพังกลับเป็น 0
+                myEarnedPointsThisRound = 0;
                 update(ref(db, 'players/' + currentUser), { streak: 0 });
                 showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'normal');
             }
