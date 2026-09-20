@@ -179,6 +179,22 @@
         button.purple:hover { box-shadow: 0 10px 26px rgba(177, 78, 255, 0.4); }
         button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
 
+        /* ============ AUTH (LOGIN/REGISTER) ============ */
+        .auth-tabs { display: flex; gap: 8px; margin-bottom: 18px; background: var(--bg-elevated); border-radius: 14px; padding: 6px; }
+        .auth-tab { flex: 1; padding: 12px; border: none; border-radius: 10px; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.25s; }
+        .auth-tab.active { background: linear-gradient(135deg, var(--accent-cool) 0%, #0891b2 100%); color: #04141a; box-shadow: 0 4px 14px rgba(0, 229, 255, 0.35); }
+        .auth-hint { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 14px; }
+        .auth-hint a { color: var(--accent-cool); cursor: pointer; font-weight: 700; text-decoration: none; }
+        .auth-hint a:hover { text-decoration: underline; }
+        .auth-error { color: var(--danger); font-size: 13px; text-align: center; margin: -6px 0 12px; min-height: 18px; font-weight: 600; }
+        .welcome-back-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(57, 255, 136, 0.12); border: 1px solid rgba(57, 255, 136, 0.35);
+            color: var(--success); font-weight: 700; font-size: 14px;
+            padding: 8px 18px; border-radius: 30px; margin-bottom: 16px;
+            animation: scaleIn 0.4s cubic-bezier(0.16,1,0.3,1);
+        }
+
         /* TOAST */
         #custom-toast {
             position: fixed; top: 0; left: 50%;
@@ -528,16 +544,38 @@
 
     <div class="app-container">
 
-        <!-- LOGIN SCREEN -->
+        <!-- AUTH SCREEN (LOGIN / REGISTER) -->
         <div id="login-screen" class="screen active">
-            <div style="text-align: center; margin-bottom: 30px;">
+            <div style="text-align: center; margin-bottom: 26px;">
                 <div style="font-size: 64px; margin-bottom: 16px;">🚀</div>
                 <h1 style="font-size: 32px;">Quiz Realtime</h1>
                 <p style="color: var(--text-muted); margin-top: 8px;">เกมตอบคำถามแบบเรียลไทม์ ยิ่งเร็วยิ่งได้เยอะ!</p>
             </div>
 
-            <input type="text" id="username-input" placeholder="พิมพ์ชื่อของคุณที่นี่..." autocomplete="off">
-            <button id="join-btn">🎮 เข้าร่วมเกม</button>
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">🔑 เข้าสู่ระบบ</button>
+                <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">✨ สมัครสมาชิก</button>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div id="auth-login-form">
+                <input type="text" id="login-name" placeholder="ชื่อผู้ใช้" autocomplete="username">
+                <input type="password" id="login-pass" placeholder="รหัสผ่าน" autocomplete="current-password">
+                <p class="auth-error" id="login-error"></p>
+                <button id="login-btn">🎮 เข้าสู่ระบบ / เข้าร่วมเกม</button>
+                <p class="auth-hint">ยังไม่มีบัญชี? <a onclick="switchAuthTab('register')">สมัครสมาชิกเลย</a></p>
+            </div>
+
+            <!-- REGISTER FORM -->
+            <div id="auth-register-form" style="display:none;">
+                <input type="text" id="reg-name" placeholder="ตั้งชื่อผู้ใช้ (ใช้เข้าเกม)" autocomplete="off">
+                <input type="password" id="reg-pass" placeholder="ตั้งรหัสผ่าน" autocomplete="new-password">
+                <input type="password" id="reg-pass2" placeholder="ยืนยันรหัสผ่าน" autocomplete="new-password">
+                <p class="auth-error" id="reg-error"></p>
+                <button id="register-btn" class="success">✨ สมัครสมาชิก</button>
+                <p class="auth-hint">มีบัญชีอยู่แล้ว? <a onclick="switchAuthTab('login')">เข้าสู่ระบบ</a></p>
+            </div>
+
             <button id="goto-admin-btn" class="purple" style="display: none; margin-top: 15px;">
                 🛠️ เข้าสู่ระบบจัดการ (Admin)
             </button>
@@ -716,6 +754,34 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        // ================= AUTO-LOGIN (กันรีเฟรชแล้วหลุดจากเกม) =================
+        // ถ้าเคย login ไว้ → ข้ามหน้า auth เข้าเกมเลย ไม่ต้องกรอกใหม่ ไม่มี animation ขัดจังหวะ
+        (async function autoLogin() {
+            const sess = loadSession();
+            if(!sess || !sess.name || !sess.pass) return;
+            try {
+                const snap = await get(ref(db, 'members/' + sess.name));
+                if(snap.exists() && snap.val().password === sess.pass) {
+                    currentUser = sess.name;
+                    try { localStorage.setItem('quiz_username', currentUser); } catch(e){}
+                    set(ref(db, 'players/' + currentUser), { name: currentUser, score: 0, streak: 0, lastRoundPoints: 0, lastRoundCorrect: null, lastActive: Date.now() })
+                    .then(() => {
+                        document.getElementById('display-player-name').textContent = currentUser;
+                        switchScreen('player-screen');
+                        listenToGameState();
+                        monitorKick();
+                        // ปลดล็อกเสียงเงียบๆ
+                        let audioUnlock = document.getElementById('snd-tick');
+                        audioUnlock.volume = 0;
+                        audioUnlock.play().then(() => audioUnlock.volume = 1).catch(e => {});
+                    })
+                    .catch(() => { clearSession(); });
+                } else {
+                    clearSession();
+                }
+            } catch(e) { clearSession(); }
+        })();
 
         // ================= SCORING TUNING =================
         // ตอบเร็ว = ได้เต็ม, ตอบช้าสุด (พอดีหมดเวลา) = เหลือ 50% ของคะแนนเต็ม
@@ -918,33 +984,96 @@
             showToast(`นำเข้า ${successCount} คำถามสำเร็จ!`, 'success');
         });
 
-        // ================= LOGIN =================
-        const usernameInput = document.getElementById('username-input');
-        if(currentUser) {
-            usernameInput.value = currentUser;
-            checkAdminName(currentUser);
-            if(!isAdmin) monitorKick();
+        // ================= AUTH: LOGIN / REGISTER =================
+        const ADMIN_NAME = '3007x';
+
+        // ---- session ถาวร: จำไว้ว่า login ด้วยบัญชีไหน (กันรีเฟรชแล้วหลุด) ----
+        function saveSession(name, pass) {
+            try { localStorage.setItem('quiz_session', JSON.stringify({ name, pass })); } catch(e){}
+        }
+        function loadSession() {
+            try { return JSON.parse(localStorage.getItem('quiz_session') || 'null'); } catch(e){ return null; }
+        }
+        function clearSession() {
+            try { localStorage.removeItem('quiz_session'); } catch(e){}
+            try { localStorage.removeItem('quiz_username'); } catch(e){}
         }
 
-        usernameInput.addEventListener('input', (e) => checkAdminName(e.target.value));
+        window.switchAuthTab = (tab) => {
+            const isLogin = tab === 'login';
+            document.getElementById('tab-login').classList.toggle('active', isLogin);
+            document.getElementById('tab-register').classList.toggle('active', !isLogin);
+            document.getElementById('auth-login-form').style.display = isLogin ? 'block' : 'none';
+            document.getElementById('auth-register-form').style.display = isLogin ? 'none' : 'block';
+            document.getElementById('login-error').textContent = '';
+            document.getElementById('reg-error').textContent = '';
+        };
 
         function checkAdminName(name) {
-            if(name.trim() === '3007x') {
+            if(name.trim() === ADMIN_NAME) {
                 document.getElementById('goto-admin-btn').style.display = 'block';
-                document.getElementById('join-btn').style.display = 'none';
+                document.getElementById('auth-login-form').style.display = 'none';
+                document.getElementById('auth-register-form').style.display = 'none';
+                document.querySelector('.auth-tabs').style.display = 'none';
             } else {
                 document.getElementById('goto-admin-btn').style.display = 'none';
-                document.getElementById('join-btn').style.display = 'block';
+                const activeTab = document.getElementById('tab-login').classList.contains('active') ? 'login' : 'register';
+                document.getElementById('auth-login-form').style.display = activeTab === 'login' ? 'block' : 'none';
+                document.getElementById('auth-register-form').style.display = activeTab === 'register' ? 'block' : 'none';
+                document.querySelector('.auth-tabs').style.display = 'flex';
             }
         }
 
-        function doJoin() {
-            const name = usernameInput.value.trim();
-            if(!name) return showToast('กรุณาใส่ชื่อก่อนเข้าเล่น!', 'warning');
-            if(document.getElementById('join-btn').style.display === 'none') return;
+        // ---- LOGIN ----
+        async function doLogin() {
+            const name = document.getElementById('login-name').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            const errEl = document.getElementById('login-error');
+            errEl.textContent = '';
 
+            if(!name || !pass) { errEl.textContent = 'กรุณากรอกชื่อและรหัสผ่าน'; return; }
+            if(name === ADMIN_NAME) { errEl.textContent = 'บัญชีนี้สงวนสำหรับแอดมิน'; return; }
+
+            // ตรวจสอบบัญชีใน Firebase (members/{name})
+            const snap = await get(ref(db, 'members/' + name));
+            if(!snap.exists()) { errEl.textContent = 'ไม่พบบัญชีนี้ กรุณาสมัครสมาชิกก่อน'; return; }
+            if(snap.val().password !== pass) { errEl.textContent = 'รหัสผ่านไม่ถูกต้อง'; return; }
+
+            enterGame(name, pass);
+        }
+
+        // ---- REGISTER ----
+        async function doRegister() {
+            const name = document.getElementById('reg-name').value.trim();
+            const pass = document.getElementById('reg-pass').value;
+            const pass2 = document.getElementById('reg-pass2').value;
+            const errEl = document.getElementById('reg-error');
+            errEl.textContent = '';
+
+            if(!name || !pass) { errEl.textContent = 'กรุณากรอกชื่อและรหัสผ่าน'; return; }
+            if(name.length < 2) { errEl.textContent = 'ชื่อต้องยาวอย่างน้อย 2 ตัวอักษร'; return; }
+            if(pass.length < 4) { errEl.textContent = 'รหัสผ่านต้องยาวอย่างน้อย 4 ตัวอักษร'; return; }
+            if(pass !== pass2) { errEl.textContent = 'รหัสผ่านยืนยันไม่ตรงกัน'; return; }
+            if(name === ADMIN_NAME) { errEl.textContent = 'ไม่สามารถใช้ชื่อนี้ได้'; return; }
+
+            // เช็กว่าชื่อซ้ำไหม
+            const snap = await get(ref(db, 'members/' + name));
+            if(snap.exists()) { errEl.textContent = 'ชื่อนี้ถูกใช้ไปแล้ว ลองชื่ออื่น'; return; }
+
+            await set(ref(db, 'members/' + name), { name, password: pass, createdAt: Date.now() });
+            showToast('สมัครสมาชิกสำเร็จ! เข้าสู่ระบบเลย', 'success');
+
+            // กลับไปหน้า login พร้อมกรอกชื่อไว้ให้แล้ว
+            switchAuthTab('login');
+            document.getElementById('login-name').value = name;
+            document.getElementById('login-pass').focus();
+        }
+
+        // ---- เข้าเกม (ใช้ร่วมกับ login + auto-relogin ตอนรีเฟรช) ----
+        function enterGame(name, pass) {
             currentUser = name;
-            localStorage.setItem('quiz_username', currentUser);
+            saveSession(name, pass);
+            try { localStorage.setItem('quiz_username', currentUser); } catch(e){}
 
             set(ref(db, 'players/' + currentUser), { name: currentUser, score: 0, streak: 0, lastRoundPoints: 0, lastRoundCorrect: null, lastActive: Date.now() })
             .then(() => {
@@ -963,16 +1092,21 @@
             });
         }
 
-        document.getElementById('join-btn').addEventListener('click', doJoin);
-        usernameInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') doJoin(); });
+        document.getElementById('login-btn').addEventListener('click', doLogin);
+        document.getElementById('register-btn').addEventListener('click', doRegister);
+        document.getElementById('login-name').addEventListener('input', (e) => checkAdminName(e.target.value));
+        document.getElementById('login-pass').addEventListener('keydown', (e) => { if(e.key === 'Enter') doLogin(); });
+        document.getElementById('login-name').addEventListener('keydown', (e) => { if(e.key === 'Enter') document.getElementById('login-pass').focus(); });
+        document.getElementById('reg-pass2').addEventListener('keydown', (e) => { if(e.key === 'Enter') doRegister(); });
 
         function monitorKick() {
             onValue(ref(db, 'players/' + currentUser), (snapshot) => {
                 if(!snapshot.exists() && currentUser && !isAdmin) {
                     currentUser = '';
-                    localStorage.removeItem('quiz_username');
+                    clearSession();
                     switchScreen('login-screen');
-                    usernameInput.value = '';
+                    document.getElementById('login-name').value = '';
+                    document.getElementById('login-pass').value = '';
                     showToast('คุณถูกเตะออกจากห้อง!', 'error');
                 } else if(snapshot.exists()) {
                     const newScore = snapshot.val().score || 0;
@@ -1018,8 +1152,10 @@
         window.logoutAdmin = () => {
             isAdmin = false;
             switchScreen('login-screen');
-            usernameInput.value = '';
-            localStorage.removeItem('quiz_username');
+            clearSession();
+            document.getElementById('login-name').value = '';
+            document.getElementById('login-pass').value = '';
+            switchAuthTab('login');
             checkAdminName('');
         };
 
