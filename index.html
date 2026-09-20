@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ตอบคำถาม</title>
     <script>
     /* ===== Theme engine (mode + accent colour) ===== */
@@ -144,7 +144,7 @@
         .app-container {
             width: 100%;
             max-width: 900px;
-            padding: 64px 16px 16px;
+            padding: calc(68px + env(safe-area-inset-top, 0px)) 16px 16px;
             position: relative;
             z-index: 1;
         }
@@ -463,36 +463,67 @@
             .option-btn { min-height: 64px; font-size: 14px; padding: 14px 10px; }
         }
 
-        /* ============ TOP TOOLBAR (mode / colour / password / logout) ============ */
-        #top-toolbar { position: fixed; top: 10px; right: 12px; z-index: 400; display: flex; gap: 8px; align-items: center; }
-        .tb-btn {
-            width: 42px; height: 42px; padding: 0; border-radius: 50%; font-size: 19px; line-height: 1;
+        /* ============ SETTINGS (GEAR + BOTTOM SHEET) ============ */
+        #settings-btn {
+            position: fixed; z-index: 400;
+            top: calc(10px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px));
+            width: 48px; height: 48px; padding: 0; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             background: var(--bg-card); color: var(--text-bright);
-            border: 1px solid rgba(128, 128, 160, 0.35); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(128, 128, 160, 0.35); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
         }
-        .tb-btn:hover { border-color: var(--accent-cool); box-shadow: 0 6px 18px rgba(var(--accent-rgb), 0.35); }
-        .tb-btn.tb-logout {
-            width: auto; border-radius: 21px; padding: 0 16px; font-size: 14px; font-weight: 800; gap: 6px;
-            background: linear-gradient(135deg, var(--danger) 0%, #b91c3c 100%); color: #fff; border-color: transparent;
+        #settings-btn svg { width: 26px; height: 26px; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        #settings-btn:hover { border-color: var(--accent-cool); box-shadow: 0 6px 18px rgba(var(--accent-rgb), 0.35); }
+        #settings-btn:hover svg, #settings-btn.open svg { transform: rotate(90deg); }
+
+        html.sheet-open, html.sheet-open body { overflow: hidden; }
+        #settings-sheet { align-items: flex-end; z-index: 700; }
+        #settings-sheet .sheet {
+            width: 100%; max-width: 520px; max-height: 90vh; max-height: 90dvh; overflow-y: auto;
+            -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+            background: var(--bg-card); color: var(--text-bright);
+            border: 1px solid rgba(128, 128, 160, 0.25); border-bottom: none;
+            border-radius: 26px 26px 0 0; padding: 8px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+            box-shadow: 0 -12px 50px rgba(0, 0, 0, 0.5); animation: sheetUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .tb-wrap { position: relative; }
-        #color-panel {
-            display: none; position: absolute; top: 52px; right: 0; width: 232px; padding: 14px;
-            background: var(--bg-card); border: 1px solid rgba(128, 128, 160, 0.3); border-radius: 16px;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .sheet-grab { width: 46px; height: 5px; border-radius: 3px; background: rgba(128, 128, 160, 0.45); margin: 6px auto 12px; }
+        .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .sheet-title { font-size: 21px; font-weight: 800; }
+        .sheet-close { width: 44px; height: 44px; padding: 0; border-radius: 50%; background: var(--bg-elevated); color: var(--text-bright); font-size: 18px; box-shadow: none; }
+        .sheet-close:hover { box-shadow: none; }
+        .set-section { padding: 16px 0; border-top: 1px solid rgba(128, 128, 160, 0.2); }
+        .set-section:first-of-type { border-top: none; }
+        .set-label { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; }
+        .set-label b { color: var(--text-bright); }
+
+        .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg-elevated); padding: 5px; border-radius: 16px; }
+        .seg-btn { min-height: 48px; padding: 10px; background: transparent; color: var(--text-muted); border-radius: 12px; font-size: 15px; box-shadow: none; }
+        .seg-btn:hover { transform: none; box-shadow: none; }
+        .seg-btn.active { background: linear-gradient(135deg, var(--accent-cool) 0%, var(--accent-2) 100%); color: var(--on-accent); }
+
+        #swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 12px; }
+        .swatch { aspect-ratio: 1; min-height: 46px; width: 100%; padding: 0; border-radius: 50%; border: 2px solid transparent; box-shadow: none; }
+        .swatch:hover { transform: scale(1.08); box-shadow: none; }
+        .swatch.active { outline: 3px solid var(--text-bright); outline-offset: 3px; }
+        .custom-swatch {
+            position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer;
+            aspect-ratio: 1; min-height: 46px; border-radius: 50%; color: #fff; font-size: 24px; font-weight: 800;
+            background: conic-gradient(#ff3b5c, #ffd60a, #39ff88, #00e5ff, #3b82f6, #b14eff, #ff3b5c);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
         }
-        #color-panel.open { display: block; animation: scaleIn 0.2s; }
-        #color-panel .cp-title { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; }
-        #swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 14px; }
-        .swatch { width: 100%; aspect-ratio: 1; padding: 0; border-radius: 50%; border: 2px solid transparent; box-shadow: none; }
-        .swatch:hover { transform: scale(1.12); box-shadow: none; }
-        .swatch.active { outline: 3px solid var(--text-bright); outline-offset: 2px; }
-        #color-panel .custom-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 600; color: var(--text-bright); }
-        #custom-color-input { width: 48px; height: 34px; padding: 2px; margin: 0; border-radius: 8px; cursor: pointer; }
-        @media (max-width: 420px) {
-            .tb-btn.tb-logout { width: 42px; padding: 0; border-radius: 50%; }
-            .tb-btn.tb-logout .tb-text { display: none; }
+        .custom-swatch.active { outline: 3px solid var(--text-bright); outline-offset: 3px; }
+        .custom-swatch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; }
+
+        .set-row-btn { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; margin-bottom: 12px; background: var(--bg-elevated); color: var(--text-bright); border: 1px solid rgba(128, 128, 160, 0.25); box-shadow: none; }
+        .set-row-btn:hover { box-shadow: none; border-color: var(--accent-cool); }
+        #settings-sheet input[type="password"] { font-size: 16px; min-height: 50px; }
+        #settings-sheet button.danger, #settings-sheet button.success { min-height: 50px; }
+
+        @media (min-width: 640px) {
+            #settings-sheet { align-items: center; }
+            #settings-sheet .sheet { border-radius: 26px; border-bottom: 1px solid rgba(128, 128, 160, 0.25); padding-bottom: 24px; animation: scaleIn 0.25s; }
+            .sheet-grab { display: none; }
         }
 
         /* ============ LIGHT MODE ============ */
@@ -524,8 +555,6 @@
         html[data-mode="light"] .rank-gain-zero { background: rgba(80, 60, 140, 0.08); }
         html[data-mode="light"] .tab-container { border-color: rgba(80, 60, 140, 0.12); }
         html[data-mode="light"] #summary-list::-webkit-scrollbar-thumb { background: rgba(80, 60, 140, 0.25); }
-        html[data-mode="light"] .tb-btn { box-shadow: 0 4px 14px rgba(60, 40, 120, 0.18); }
-        html[data-mode="light"] .tb-btn.tb-logout { color: #fff; }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -545,39 +574,54 @@
 
     <div id="custom-toast">ข้อความแจ้งเตือน</div>
 
-    <!-- TOP TOOLBAR -->
-    <div id="top-toolbar">
-        <button class="tb-btn" id="mode-btn" title="สลับโหมดมืด / สว่าง" aria-label="สลับโหมดมืด / สว่าง">☀️</button>
-        <div class="tb-wrap">
-            <button class="tb-btn" id="color-btn" title="เปลี่ยนสีธีม" aria-label="เปลี่ยนสีธีม">🎨</button>
-            <div id="color-panel">
-                <p class="cp-title">เลือกสีธีม</p>
-                <div id="swatches"></div>
-                <label class="custom-row">สีที่กำหนดเอง <input type="color" id="custom-color-input" value="#00e5ff"></label>
-            </div>
-        </div>
-        <button class="tb-btn" id="settings-btn" title="เปลี่ยนรหัสผ่าน" aria-label="เปลี่ยนรหัสผ่าน" style="display:none;">🔑</button>
-        <button class="tb-btn tb-logout" id="logout-btn" title="ออกจากระบบ" aria-label="ออกจากระบบ" style="display:none;"><span>🚪</span><span class="tb-text">ออกจากระบบ</span></button>
-    </div>
+    <!-- SETTINGS: GEAR BUTTON + BOTTOM SHEET -->
+    <button id="settings-btn" title="ตั้งค่า" aria-label="ตั้งค่า">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
 
-    <!-- CHANGE PASSWORD / PIN MODAL -->
-    <div id="settings-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 id="settings-title">🔑 เปลี่ยนรหัสผ่าน</h2>
-            <div id="pw-form">
-                <input type="password" id="cp-old" placeholder="รหัสผ่านปัจจุบัน" autocomplete="current-password">
-                <input type="password" id="cp-new" placeholder="รหัสผ่านใหม่ (อย่างน้อย 4 ตัวอักษร)" autocomplete="new-password">
-                <input type="password" id="cp-new2" placeholder="ยืนยันรหัสผ่านใหม่" autocomplete="new-password">
+    <div id="settings-sheet" class="modal-overlay">
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+            <div class="sheet-grab"></div>
+            <div class="sheet-head">
+                <span class="sheet-title" id="sheet-title">⚙️ ตั้งค่า</span>
+                <button class="sheet-close" id="sheet-close" aria-label="ปิด">✕</button>
             </div>
-            <div id="pin-form" style="display:none;">
-                <input type="password" id="pin-old" inputmode="numeric" maxlength="6" placeholder="PIN ปัจจุบัน">
-                <input type="password" id="pin-new" inputmode="numeric" maxlength="6" placeholder="PIN ใหม่ (ตัวเลข 4-6 หลัก)">
-                <input type="password" id="pin-new2" inputmode="numeric" maxlength="6" placeholder="ยืนยัน PIN ใหม่">
+
+            <div class="set-section">
+                <p class="set-label">โหมดการแสดงผล</p>
+                <div class="seg">
+                    <button class="seg-btn" data-mode="dark">🌙 โหมดมืด</button>
+                    <button class="seg-btn" data-mode="light">☀️ โหมดสว่าง</button>
+                </div>
             </div>
-            <p class="auth-error" id="settings-error"></p>
-            <div style="display: flex; gap: 10px;">
-                <button id="settings-cancel" class="danger">ยกเลิก</button>
-                <button id="settings-save" class="success">บันทึก</button>
+
+            <div class="set-section">
+                <p class="set-label">สีธีม</p>
+                <div id="swatches">
+                    <label class="custom-swatch" id="custom-swatch" title="เลือกสีเอง">+<input type="color" id="custom-color-input" value="#00e5ff" aria-label="เลือกสีเอง"></label>
+                </div>
+            </div>
+
+            <div class="set-section" id="account-section" style="display:none;">
+                <p class="set-label">บัญชี: <b id="set-user-name"></b></p>
+                <button class="set-row-btn" id="toggle-pw-btn"><span>🔑</span><span id="pw-btn-text">เปลี่ยนรหัสผ่าน</span></button>
+
+                <div id="pw-wrap" style="display:none;">
+                    <div id="pw-form">
+                        <input type="password" id="cp-old" placeholder="รหัสผ่านปัจจุบัน" autocomplete="current-password">
+                        <input type="password" id="cp-new" placeholder="รหัสผ่านใหม่ (อย่างน้อย 4 ตัวอักษร)" autocomplete="new-password">
+                        <input type="password" id="cp-new2" placeholder="ยืนยันรหัสผ่านใหม่" autocomplete="new-password">
+                    </div>
+                    <div id="pin-form" style="display:none;">
+                        <input type="password" id="pin-old" inputmode="numeric" maxlength="6" placeholder="PIN ปัจจุบัน">
+                        <input type="password" id="pin-new" inputmode="numeric" maxlength="6" placeholder="PIN ใหม่ (ตัวเลข 4-6 หลัก)">
+                        <input type="password" id="pin-new2" inputmode="numeric" maxlength="6" placeholder="ยืนยัน PIN ใหม่">
+                    </div>
+                    <p class="auth-error" id="settings-error"></p>
+                    <button id="settings-save" class="success" style="margin-bottom: 12px;">💾 บันทึก</button>
+                </div>
+
+                <button id="logout-btn" class="danger">🚪 ออกจากระบบ</button>
             </div>
         </div>
     </div>
@@ -902,10 +946,6 @@
             if(!currentUser && !isAdmin && screenId !== 'login-screen') return;
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
-            const loggedIn = screenId !== 'login-screen';
-            ['settings-btn', 'logout-btn'].forEach(id => {
-                document.getElementById(id).style.display = loggedIn ? 'flex' : 'none';
-            });
         };
 
         const playSound = (id) => {
@@ -1895,91 +1935,106 @@
             showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'success');
         };
 
-        // ================= TOOLBAR: MODE / COLOUR / PASSWORD / LOGOUT =================
-        (function setupToolbar() {
+        // ================= SETTINGS (GEAR) =================
+        (function setupSettings() {
             const T = window.QuizTheme;
-            const modeBtn = document.getElementById('mode-btn');
-            const colorBtn = document.getElementById('color-btn');
-            const panel = document.getElementById('color-panel');
-            const swatchBox = document.getElementById('swatches');
-            const customInput = document.getElementById('custom-color-input');
+            const $ = (id) => document.getElementById(id);
+            const gear = $('settings-btn'), sheet = $('settings-sheet');
+            const swatchBox = $('swatches'), customInput = $('custom-color-input'), customSwatch = $('custom-swatch');
+            const pwWrap = $('pw-wrap'), errEl = $('settings-error');
 
-            const refreshModeIcon = () => {
-                const light = T.getMode() === 'light';
-                modeBtn.textContent = light ? '🌙' : '☀️';
-                modeBtn.title = light ? 'สลับเป็นโหมดมืด' : 'สลับเป็นโหมดสว่าง';
+            const isLoggedIn = () => isAdmin || !$('login-screen').classList.contains('active');
+
+            const refreshMode = () => {
+                sheet.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === T.getMode()));
             };
-            modeBtn.addEventListener('click', () => { T.applyMode(T.getMode() === 'light' ? 'dark' : 'light'); refreshModeIcon(); });
-            refreshModeIcon();
-
-            const refreshSwatches = () => {
+            const refreshAccent = () => {
                 const cur = T.getAccent();
                 swatchBox.querySelectorAll('.swatch').forEach(b => b.classList.toggle('active', b.dataset.key === cur));
-                if(cur.startsWith('custom:')) customInput.value = cur.slice(7);
-                else customInput.value = T.PRESETS[cur] ? T.PRESETS[cur].c : '#00e5ff';
+                const isCustom = cur.startsWith('custom:');
+                customSwatch.classList.toggle('active', isCustom);
+                customInput.value = isCustom ? cur.slice(7) : (T.PRESETS[cur] ? T.PRESETS[cur].c : '#00e5ff');
             };
+
+            sheet.querySelectorAll('.seg-btn').forEach(b => b.addEventListener('click', () => { T.applyMode(b.dataset.mode); refreshMode(); }));
             Object.keys(T.PRESETS).forEach(key => {
                 const p = T.PRESETS[key];
                 const b = document.createElement('button');
-                b.className = 'swatch'; b.dataset.key = key; b.title = p.name; b.setAttribute('aria-label', p.name);
+                b.className = 'swatch'; b.dataset.key = key; b.title = p.name; b.setAttribute('aria-label', 'สี' + p.name);
                 b.style.background = `linear-gradient(135deg, ${p.c}, ${p.c2})`;
-                b.addEventListener('click', () => { T.applyAccent(key); refreshSwatches(); });
-                swatchBox.appendChild(b);
+                b.addEventListener('click', () => { T.applyAccent(key); refreshAccent(); });
+                swatchBox.insertBefore(b, customSwatch);
             });
-            customInput.addEventListener('input', (e) => { T.applyAccent('custom:' + e.target.value); refreshSwatches(); });
-            refreshSwatches();
+            customInput.addEventListener('input', (e) => { T.applyAccent('custom:' + e.target.value); refreshAccent(); });
 
-            colorBtn.addEventListener('click', (e) => { e.stopPropagation(); panel.classList.toggle('open'); });
-            panel.addEventListener('click', (e) => e.stopPropagation());
-            document.addEventListener('click', () => panel.classList.remove('open'));
+            const collapsePw = () => {
+                pwWrap.style.display = 'none';
+                ['cp-old', 'cp-new', 'cp-new2', 'pin-old', 'pin-new', 'pin-new2'].forEach(id => $(id).value = '');
+                errEl.textContent = '';
+            };
 
-            document.getElementById('logout-btn').addEventListener('click', () => window.logout());
-        })();
-
-        // ---- เปลี่ยนรหัสผ่านผู้เล่น / PIN แอดมิน ----
-        const settingsModal = document.getElementById('settings-modal');
-        const settingsErr = document.getElementById('settings-error');
-
-        document.getElementById('settings-btn').addEventListener('click', () => {
-            document.getElementById('settings-title').textContent = isAdmin ? '🔐 เปลี่ยน PIN แอดมิน' : '🔑 เปลี่ยนรหัสผ่าน';
-            document.getElementById('pw-form').style.display = isAdmin ? 'none' : 'block';
-            document.getElementById('pin-form').style.display = isAdmin ? 'block' : 'none';
-            ['cp-old', 'cp-new', 'cp-new2', 'pin-old', 'pin-new', 'pin-new2'].forEach(id => document.getElementById(id).value = '');
-            settingsErr.textContent = '';
-            settingsModal.classList.add('active');
-        });
-        document.getElementById('settings-cancel').addEventListener('click', () => settingsModal.classList.remove('active'));
-
-        document.getElementById('settings-save').addEventListener('click', async () => {
-            settingsErr.textContent = '';
-            try {
-                if(isAdmin) {
-                    const oldPin = document.getElementById('pin-old').value;
-                    const newPin = document.getElementById('pin-new').value;
-                    const newPin2 = document.getElementById('pin-new2').value;
-                    if(oldPin !== await getAdminPin()) { settingsErr.textContent = 'PIN ปัจจุบันไม่ถูกต้อง'; return; }
-                    if(!/^\d{4,6}$/.test(newPin)) { settingsErr.textContent = 'PIN ใหม่ต้องเป็นตัวเลข 4-6 หลัก'; return; }
-                    if(newPin !== newPin2) { settingsErr.textContent = 'PIN ยืนยันไม่ตรงกัน'; return; }
-                    await set(ref(db, 'settings/adminPin'), newPin);
-                    showToast('เปลี่ยน PIN แอดมินสำเร็จ', 'success');
-                } else {
-                    const oldPass = document.getElementById('cp-old').value;
-                    const newPass = document.getElementById('cp-new').value;
-                    const newPass2 = document.getElementById('cp-new2').value;
-                    const snap = await get(ref(db, 'members/' + currentUser));
-                    if(!snap.exists() || snap.val().password !== oldPass) { settingsErr.textContent = 'รหัสผ่านปัจจุบันไม่ถูกต้อง'; return; }
-                    if(newPass.length < 4) { settingsErr.textContent = 'รหัสผ่านใหม่ต้องยาวอย่างน้อย 4 ตัวอักษร'; return; }
-                    if(newPass !== newPass2) { settingsErr.textContent = 'รหัสผ่านยืนยันไม่ตรงกัน'; return; }
-                    if(newPass === oldPass) { settingsErr.textContent = 'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสเดิม'; return; }
-                    await update(ref(db, 'members/' + currentUser), { password: newPass });
-                    saveSession(currentUser, newPass);
-                    showToast('เปลี่ยนรหัสผ่านสำเร็จ', 'success');
+            const openSheet = () => {
+                const logged = isLoggedIn();
+                $('account-section').style.display = logged ? 'block' : 'none';
+                if(logged) {
+                    $('set-user-name').textContent = isAdmin ? 'แอดมิน' : currentUser;
+                    $('pw-btn-text').textContent = isAdmin ? 'เปลี่ยน PIN แอดมิน' : 'เปลี่ยนรหัสผ่าน';
+                    $('pw-form').style.display = isAdmin ? 'none' : 'block';
+                    $('pin-form').style.display = isAdmin ? 'block' : 'none';
                 }
-                settingsModal.classList.remove('active');
-            } catch(err) {
-                settingsErr.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
-            }
-        });
+                collapsePw();
+                refreshMode(); refreshAccent();
+                sheet.classList.add('active');
+                gear.classList.add('open');
+                document.documentElement.classList.add('sheet-open');
+            };
+            const closeSheet = () => {
+                sheet.classList.remove('active');
+                gear.classList.remove('open');
+                document.documentElement.classList.remove('sheet-open');
+            };
+
+            gear.addEventListener('click', () => sheet.classList.contains('active') ? closeSheet() : openSheet());
+            $('sheet-close').addEventListener('click', closeSheet);
+            sheet.addEventListener('click', (e) => { if(e.target === sheet) closeSheet(); });
+            document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeSheet(); });
+
+            $('toggle-pw-btn').addEventListener('click', () => {
+                const show = pwWrap.style.display === 'none';
+                pwWrap.style.display = show ? 'block' : 'none';
+                errEl.textContent = '';
+                if(show) setTimeout(() => $(isAdmin ? 'pin-old' : 'cp-old').focus(), 50);
+            });
+
+            $('logout-btn').addEventListener('click', () => { closeSheet(); window.logout(); });
+
+            $('settings-save').addEventListener('click', async () => {
+                errEl.textContent = '';
+                try {
+                    if(isAdmin) {
+                        const oldPin = $('pin-old').value, newPin = $('pin-new').value, newPin2 = $('pin-new2').value;
+                        if(oldPin !== await getAdminPin()) { errEl.textContent = 'PIN ปัจจุบันไม่ถูกต้อง'; return; }
+                        if(!/^\d{4,6}$/.test(newPin)) { errEl.textContent = 'PIN ใหม่ต้องเป็นตัวเลข 4-6 หลัก'; return; }
+                        if(newPin !== newPin2) { errEl.textContent = 'PIN ยืนยันไม่ตรงกัน'; return; }
+                        await set(ref(db, 'settings/adminPin'), newPin);
+                        showToast('เปลี่ยน PIN แอดมินสำเร็จ', 'success');
+                    } else {
+                        const oldPass = $('cp-old').value, newPass = $('cp-new').value, newPass2 = $('cp-new2').value;
+                        const snap = await get(ref(db, 'members/' + currentUser));
+                        if(!snap.exists() || snap.val().password !== oldPass) { errEl.textContent = 'รหัสผ่านปัจจุบันไม่ถูกต้อง'; return; }
+                        if(newPass.length < 4) { errEl.textContent = 'รหัสผ่านใหม่ต้องยาวอย่างน้อย 4 ตัวอักษร'; return; }
+                        if(newPass !== newPass2) { errEl.textContent = 'รหัสผ่านยืนยันไม่ตรงกัน'; return; }
+                        if(newPass === oldPass) { errEl.textContent = 'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสเดิม'; return; }
+                        await update(ref(db, 'members/' + currentUser), { password: newPass });
+                        saveSession(currentUser, newPass);
+                        showToast('เปลี่ยนรหัสผ่านสำเร็จ', 'success');
+                    }
+                    collapsePw();
+                } catch(err) {
+                    errEl.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
+                }
+            });
+        })();
     </script>
 </body>
 </html>
