@@ -1248,7 +1248,8 @@
             onValue(ref(db, 'gameState/podium'), async (snapshot) => {
                 if(snapshot.exists() && snapshot.val() === true) {
                     isPodiumActive = true;
-                    switchScreen('podium-screen');
+                    // แอดมินอยู่หน้าควบคุมต่อ ไม่ดีดไปหน้า podium (กดดูได้จากปุ่มสรุปผลถ้าต้องการ)
+                    if(!isAdmin) switchScreen('podium-screen');
                     playSound('snd-win');
 
                     const pSnap = await get(ref(db, 'players'));
@@ -1302,18 +1303,24 @@
                 if(val && val.active) {
                     if(isPodiumActive) return;
                     isSummaryActive = true;
-                    renderSummaryScreen();
-                    switchScreen('summary-screen');
-                    playSound('snd-win');
+                    if(isAdmin) {
+                        // แอดมิน: แค่โชว์แถบแจ้งเตือนบนหน้าควบคุม ไม่สลับหน้า กดส่งข้อต่อไปได้ทันที
+                        showToast('📊 กำลังแสดงกระดานสรุปคะแนนให้ผู้เล่น...', 'normal');
+                    } else {
+                        renderSummaryScreen();
+                        switchScreen('summary-screen');
+                        playSound('snd-win');
+                    }
                 } else if(isSummaryActive) {
                     isSummaryActive = false;
-                    if(!isPodiumActive) switchScreen(isAdmin ? 'admin-screen' : 'player-screen');
+                    if(!isPodiumActive && !isAdmin) switchScreen('player-screen');
                 }
             });
 
             // ---- Auto-engine: เฉลยอัตโนมัติเมื่อหมดเวลา + เปิด/ปิดกระดานสรุปเอง ----
-            // ทำงานอยู่ในทุกแท็บที่เปิดหน้านี้ค้างไว้ (ทั้งแอดมินและผู้เล่น) เพื่อความชัวร์
+            // ⚠️ ทำงานเฉพาะแท็บแอดมินเท่านั้น (isAdmin) กันแท็บผู้เล่นแย่งเขียน state จนหน้าจอแอดมินกระโดด
             setInterval(() => {
+                if(!isAdmin) return;
                 if(!liveCurrentState || !liveCurrentState.active) return;
                 const now = Date.now();
 
@@ -1342,6 +1349,8 @@
             // ---- หน้าจอผู้เล่น: แสดงคำถาม/ตัวเลือก/ตัวจับเวลา ----
             onValue(ref(db, 'gameState/current'), (snapshot) => {
                 if(isPodiumActive || isAdmin || isSummaryActive) return;
+                // กันเผื่อแอดมินถูกดีดมาหน้านี้: ถ้าไม่ใช่หน้าผู้เล่นที่ active จริง ให้ข้าม
+                if(!document.getElementById('player-screen').classList.contains('active')) return;
 
                 const waitArea = document.getElementById('waiting-area');
                 const qArea = document.getElementById('question-area');
