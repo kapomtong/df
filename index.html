@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Realtime - เกมตอบคำถาม</title>
+    <title>ตอบคำถาม</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap');
@@ -899,7 +899,7 @@
         });
 
         // ================= AUTH: LOGIN / REGISTER =================
-        const ADMIN_NAME = '3007x';
+        const ADMIN_NAME = 'moosup';
 
         function saveSession(name, pass) { try { localStorage.setItem('quiz_session', JSON.stringify({ name, pass })); } catch(e){} }
         function loadSession() { try { return JSON.parse(localStorage.getItem('quiz_session') || 'null'); } catch(e){ return null; } }
