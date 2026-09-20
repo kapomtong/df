@@ -366,7 +366,17 @@
         @keyframes slideUpPodium { to { opacity: 1; transform: translateY(0); } }
 
         /* ============ ROUND SUMMARY ============ */
-        .rank-row { display: flex; align-items: center; gap: 14px; background: var(--bg-elevated); padding: 12px 16px; border-radius: 14px; margin-bottom: 10px; opacity: 0; animation: rankIn 0.5s ease forwards; border: 1px solid rgba(255, 255, 255, 0.06); }
+        /* แก้ไขเพื่อรองรับการเลื่อนได้เมื่อคนเล่นเยอะ และแก้แอนิเมชันบั๊กไม่แสดงรายการบนมือถือ */
+        #summary-list {
+            max-height: 55vh;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        #summary-list::-webkit-scrollbar { width: 6px; }
+        #summary-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
+        #summary-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+        
+        .rank-row { display: flex; align-items: center; gap: 14px; background: var(--bg-elevated); padding: 12px 16px; border-radius: 14px; margin-bottom: 10px; animation: rankIn 0.5s ease both; border: 1px solid rgba(255, 255, 255, 0.06); }
         @keyframes rankIn { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: translateX(0); } }
         .rank-row.rank-1 { background: linear-gradient(135deg, rgba(255,214,10,0.22), var(--bg-elevated)); border-color: var(--gold); box-shadow: 0 0 24px rgba(255,214,10,0.22); }
         .rank-medal { font-size: 24px; width: 38px; text-align: center; font-weight: 800; color: var(--text-muted); flex-shrink: 0; }
@@ -1198,7 +1208,6 @@
             try {
                 const queueSnap = await get(ref(db, 'questions'));
                 if(!queueSnap.exists()) {
-                    // หากคำถามหมด ให้กลับสู่สถานะรอ และปิดกระดานสรุปคะแนน
                     await set(ref(db, 'gameState'), { current: { active: false }, podium: false, summary: { active: false } });
                     showToast('จบรอบนี้แล้ว — ยังไม่มีคำถามถัดไปในคิว', 'normal');
                     return;
@@ -1259,50 +1268,54 @@
 
         // ================= ROUND SUMMARY =================
         async function renderSummaryScreen() {
-            const snap = await get(ref(db, 'players'));
-            let players = [];
-            if(snap.exists()) snap.forEach(c => players.push(c.val()));
-            players.sort((a, b) => (b.score||0) - (a.score||0));
+            try {
+                const snap = await get(ref(db, 'players'));
+                let players = [];
+                if(snap.exists()) snap.forEach(c => players.push(c.val()));
+                players.sort((a, b) => (b.score||0) - (a.score||0));
 
-            const maxScore = Math.max(1, ...players.map(p => p.score || 0));
-            const container = document.getElementById('summary-list');
+                const maxScore = Math.max(1, ...players.map(p => p.score || 0));
+                const container = document.getElementById('summary-list');
 
-            if(players.length === 0) {
-                container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">ไม่มีผู้เล่น</p>';
-                return;
+                if(players.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">ไม่มีผู้เล่น</p>';
+                    return;
+                }
+
+                container.innerHTML = players.map((p, i) => {
+                    const rank = i + 1;
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                    const widthPct = Math.max(6, Math.round(((p.score || 0) / maxScore) * 100));
+                    
+                    // บังคับแสดง +0 เสมอ ไม่ว่าค่าคะแนนหรือค่าตอบถูกจะเป็นอะไร เพื่อกันข้อความหาย
+                    const gained = p.lastRoundPoints || 0;
+                    const gainedHtml = `<span class="rank-gain ${gained <= 0 ? 'rank-gain-zero' : ''}">+${gained}</span>`;
+
+                    return `
+                        <div class="rank-row ${rank <= 3 ? 'rank-' + rank : ''}" style="animation-delay:${i * 0.08}s">
+                            <div class="rank-medal">${medal}</div>
+                            <div class="rank-info">
+                                <div class="rank-name">${p.name || 'Unknown'}${p.streak >= 2 ? `<span class="mini-flame">🔥x${p.streak}</span>` : ''}</div>
+                                <div class="rank-bar-track"><div class="rank-bar-fill" data-target-width="${widthPct}"></div></div>
+                            </div>
+                            <div class="rank-score-wrap">
+                                <div class="rank-score" data-target="${p.score || 0}">0</div>
+                                ${gainedHtml}
+                            </div>
+                        </div>`;
+                }).join('');
+
+                requestAnimationFrame(() => {
+                    document.querySelectorAll('#summary-list .rank-bar-fill').forEach(el => {
+                        el.style.width = (el.dataset.targetWidth || 0) + '%';
+                    });
+                    document.querySelectorAll('#summary-list .rank-score').forEach(el => {
+                        animateNumber(el, 0, parseInt(el.dataset.target) || 0, 900);
+                    });
+                });
+            } catch (err) {
+                console.error("Summary Render Error: ", err);
             }
-
-            container.innerHTML = players.map((p, i) => {
-                const rank = i + 1;
-                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
-                const widthPct = Math.max(6, Math.round(((p.score || 0) / maxScore) * 100));
-                const gained = p.lastRoundPoints || 0;
-                let gainedHtml = '';
-                if(gained > 0) gainedHtml = `<span class="rank-gain">+${gained}</span>`;
-                else if(p.lastRoundCorrect === false) gainedHtml = `<span class="rank-gain rank-gain-zero">+0</span>`;
-
-                return `
-                    <div class="rank-row ${rank <= 3 ? 'rank-' + rank : ''}" style="animation-delay:${i * 0.08}s">
-                        <div class="rank-medal">${medal}</div>
-                        <div class="rank-info">
-                            <div class="rank-name">${p.name}${p.streak >= 2 ? `<span class="mini-flame">🔥x${p.streak}</span>` : ''}</div>
-                            <div class="rank-bar-track"><div class="rank-bar-fill" data-target-width="${widthPct}"></div></div>
-                        </div>
-                        <div class="rank-score-wrap">
-                            <div class="rank-score" data-target="${p.score || 0}">0</div>
-                            ${gainedHtml}
-                        </div>
-                    </div>`;
-            }).join('');
-
-            requestAnimationFrame(() => {
-                document.querySelectorAll('#summary-list .rank-bar-fill').forEach(el => {
-                    el.style.width = (el.dataset.targetWidth || 0) + '%';
-                });
-                document.querySelectorAll('#summary-list .rank-score').forEach(el => {
-                    animateNumber(el, 0, parseInt(el.dataset.target) || 0, 900);
-                });
-            });
         }
 
         // ================= GAME STATE =================
@@ -1365,8 +1378,9 @@
                 if(val && val.active) {
                     if(isPodiumActive) return;
                     isSummaryActive = true;
-                    renderSummaryScreen();
+                    // เปิดหน้าจอให้แสดงก่อน แล้วค่อยสร้างข้อมูล เพื่อลดบั๊กแอนิเมชันบนมือถือ
                     switchScreen('summary-screen');
+                    renderSummaryScreen();
                     playSound('snd-win');
                 } else if(isSummaryActive) {
                     isSummaryActive = false;
@@ -1378,14 +1392,12 @@
             if(autoEngineStarted) return;
             autoEngineStarted = true;
             setInterval(() => {
-                // บล็อคป้องกัน! ให้แอดมินเท่านั้นที่เป็นคนสั่งอัพเดทสถานะลง Firebase ป้องกันระบบตีกัน
                 if(!isAdmin) return; 
 
                 if(!liveCurrentState || !liveCurrentState.active) return;
                 
                 const now = getNow();
 
-                // 1. สั่งเปิดเฉลยอัตโนมัติ
                 if(!liveCurrentState.showAnswer
                    && liveCurrentState.answerStartAt
                    && now >= liveCurrentState.endTime
@@ -1394,7 +1406,6 @@
                     update(ref(db, 'gameState/current'), { showAnswer: true, revealedAt: now, summaryAt: now + REVEAL_TO_SUMMARY_MS }).catch(()=>{});
                 }
 
-                // 2. สั่งเปิดหน้าสรุปคะแนน
                 if(liveCurrentState.showAnswer && liveCurrentState.revealedAt
                    && now >= (liveCurrentState.summaryAt || (liveCurrentState.revealedAt + REVEAL_TO_SUMMARY_MS))
                    && (!liveSummaryState || !liveSummaryState.active)
@@ -1403,14 +1414,12 @@
                     update(ref(db, 'gameState/summary'), { active: true, questionId: liveCurrentState.questionId, ts: now }).catch(()=>{});
                 }
 
-                // 3. ปิดหน้าสรุปคะแนน และไปข้อถัดไป
                 if(liveSummaryState && liveSummaryState.active && liveSummaryState.ts
                    && now >= liveSummaryState.ts + SUMMARY_DURATION_MS
                    && summaryHiddenFor !== liveSummaryState.questionId) {
                     summaryHiddenFor = liveSummaryState.questionId;
                     const completedQuestionId = liveSummaryState.questionId;
                     
-                    // ให้แอดมินเรียกฟังก์ชันนี้เพื่อจัดการเคลียร์ค่า และเปิดข้อใหม่
                     advanceToNextQuestion(completedQuestionId);
                 }
             }, 500);
@@ -1715,7 +1724,6 @@
                 myBonus = 0;
             }
 
-            // แสดงแจ้งเตือนเป็นสีเขียวเหมือนกันหมด ไม่ว่าจะตอบถูกหรือผิด เพื่อไม่ให้จับทางได้
             showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'success');
         };
 
