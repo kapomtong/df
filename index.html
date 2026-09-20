@@ -180,6 +180,7 @@
         button.purple { background: linear-gradient(135deg, var(--purple) 0%, #7c1fd8 100%); color: white; }
         button.purple:hover { box-shadow: 0 10px 26px rgba(177, 78, 255, 0.4); }
         button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+        
         /* ============ AUTH (LOGIN/REGISTER) ============ */
         .auth-tabs { display: flex; gap: 8px; margin-bottom: 18px; background: var(--bg-elevated); border-radius: 14px; padding: 6px; }
         .auth-tab { flex: 1; padding: 12px; border: none; border-radius: 10px; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.25s; }
@@ -188,14 +189,6 @@
         .auth-hint a { color: var(--accent-cool); cursor: pointer; font-weight: 700; text-decoration: none; }
         .auth-hint a:hover { text-decoration: underline; }
         .auth-error { color: var(--danger); font-size: 13px; text-align: center; margin: -6px 0 12px; min-height: 18px; font-weight: 600; }
-        .welcome-back-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(57, 255, 136, 0.12); border: 1px solid rgba(57, 255, 136, 0.35);
-            color: var(--success); font-weight: 700; font-size: 14px;
-            padding: 8px 18px; border-radius: 30px; margin-bottom: 16px;
-            animation: scaleIn 0.4s cubic-bezier(0.16,1,0.3,1);
-        }
-
 
         /* TOAST */
         #custom-toast {
@@ -244,7 +237,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
         }
 
-        /* ============ OPTIONS: game-show colored shapes ============ */
+        /* ============ OPTIONS ============ */
         .options-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -252,20 +245,10 @@
             margin-bottom: 15px;
         }
         .option-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            color: white;
-            border: none;
-            font-size: 16px;
-            font-weight: 800;
-            padding: 20px 14px;
-            min-height: 76px;
-            border-radius: 16px;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            color: white; border: none; font-size: 16px; font-weight: 800;
+            padding: 20px 14px; min-height: 76px; border-radius: 16px; position: relative;
+            overflow: hidden; transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
             box-shadow: 0 6px 18px rgba(0,0,0,0.3);
         }
         .option-btn.opt-a { background: linear-gradient(135deg, var(--opt-a), var(--opt-a2)); }
@@ -277,10 +260,7 @@
         .option-btn:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.08); }
         .option-btn:active { transform: translateY(0) scale(0.97); }
         .option-btn.selected { outline: 4px solid white; transform: scale(0.97); }
-        .option-btn.correct {
-            animation: correctPulse 0.6s ease;
-            box-shadow: 0 0 0 6px rgba(57, 255, 136, 0.5), 0 0 40px rgba(57, 255, 136, 0.6);
-        }
+        .option-btn.correct { animation: correctPulse 0.6s ease; box-shadow: 0 0 0 6px rgba(57, 255, 136, 0.5), 0 0 40px rgba(57, 255, 136, 0.6); }
         .option-btn.wrong { animation: shakeBtn 0.5s; opacity: 0.55; }
         @keyframes correctPulse { 0% { transform: scale(1); } 50% { transform: scale(1.07); } 100% { transform: scale(1); } }
         @keyframes shakeBtn {
@@ -296,57 +276,25 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         }
 
-        /* ตัวหนังสือคำถาม: สีขาวล้วน อ่านง่าย ไม่ไล่สี */
         #player-question-text {
-            font-size: 26px !important;
-            line-height: 1.5;
-            font-weight: 800;
-            color: #FFFFFF;
-            -webkit-text-fill-color: #FFFFFF;
-            background: none;
-            text-align: center;
-            margin-bottom: 12px;
-            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+            font-size: 26px !important; line-height: 1.5; font-weight: 800;
+            color: #FFFFFF; -webkit-text-fill-color: #FFFFFF; background: none;
+            text-align: center; margin-bottom: 12px; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
         }
 
-        /* แถบสถานะ "เตรียมตัว..." ตอนรอช้อยส์ขึ้น */
         .prepare-banner {
-            text-align: center;
-            padding: 28px 16px;
-            margin-bottom: 15px;
-            background: rgba(0, 229, 255, 0.08);
-            border: 2px dashed rgba(0, 229, 255, 0.35);
-            border-radius: 16px;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--accent-cool);
+            text-align: center; padding: 28px 16px; margin-bottom: 15px;
+            background: rgba(0, 229, 255, 0.08); border: 2px dashed rgba(0, 229, 255, 0.35);
+            border-radius: 16px; font-size: 20px; font-weight: 800; color: var(--accent-cool);
             animation: pulse 1s infinite;
         }
         .prepare-banner .countdown { font-size: 34px; display: block; margin-top: 6px; }
 
-        /* ===== TRANSITION ANIMATIONS ===== */
-        @keyframes questionSlideIn {
-            0%   { opacity: 0; transform: translateY(-26px) scale(0.96); }
-            60%  { opacity: 1; transform: translateY(4px) scale(1.005); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes qImgZoomIn {
-            0%   { opacity: 0; transform: scale(0.92); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        @keyframes bannerPopOut {
-            0%   { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.85); }
-        }
-        @keyframes optionPopIn {
-            0%   { opacity: 0; transform: translateY(22px) scale(0.9); }
-            70%  { opacity: 1; transform: translateY(-3px) scale(1.02); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes timerDropIn {
-            0%   { opacity: 0; transform: translateY(-18px) scale(0.8); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
+        @keyframes questionSlideIn { 0% { opacity: 0; transform: translateY(-26px) scale(0.96); } 60% { opacity: 1; transform: translateY(4px) scale(1.005); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes qImgZoomIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes bannerPopOut { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.85); } }
+        @keyframes optionPopIn { 0% { opacity: 0; transform: translateY(22px) scale(0.9); } 70% { opacity: 1; transform: translateY(-3px) scale(1.02); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes timerDropIn { 0% { opacity: 0; transform: translateY(-18px) scale(0.8); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 
         .anim-question-in  { animation: questionSlideIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
         .anim-img-in       { animation: qImgZoomIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
@@ -354,9 +302,7 @@
         .anim-option-in    { animation: optionPopIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
         .anim-timer-in     { animation: timerDropIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-        @media (max-width: 640px) {
-            #player-question-text { font-size: 21px !important; }
-        }
+        @media (max-width: 640px) { #player-question-text { font-size: 21px !important; } }
 
         .list-item {
             display: flex; justify-content: space-between; padding: 12px 16px;
@@ -365,14 +311,13 @@
             border: 1px solid rgba(255, 255, 255, 0.06); animation: slideUp 0.3s;
         }
 
-        /* ============ TIMER RING (SVG) ============ */
+        /* ============ TIMER RING ============ */
         .timer-ring-wrap { position: relative; width: 130px; height: 130px; margin: 0 auto 14px; }
         .timer-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
         .timer-ring-bg { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 10; }
         .timer-ring-progress {
             fill: none; stroke: var(--accent-cool); stroke-width: 10; stroke-linecap: round;
-            stroke-dasharray: 314.159; stroke-dashoffset: 0;
-            transition: stroke-dashoffset 0.25s linear, stroke 0.3s;
+            stroke-dasharray: 314.159; stroke-dashoffset: 0; transition: stroke-dashoffset 0.25s linear, stroke 0.3s;
         }
         .timer-ring-text {
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -382,7 +327,7 @@
         .timer-ring-wrap.danger .timer-ring-text { color: var(--danger); animation: pulse 0.6s infinite; }
         .potential-points { text-align: center; font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 16px; }
 
-        /* ============ FLOATING POINTS POPUP ============ */
+        /* ============ FLOATING POINTS ============ */
         .float-point {
             position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%);
             font-size: 36px; font-weight: 900; color: var(--success);
@@ -395,8 +340,6 @@
             15% { opacity: 1; transform: translate(-50%, -55%) scale(1.15); }
             100% { opacity: 0; transform: translate(-50%, -160%) scale(1); }
         }
-
-        .timer-circle { /* legacy fallback, unused visually now */ display: none; }
 
         .streak-badge {
             background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
@@ -418,19 +361,12 @@
         }
         .podium-score { font-size: 17px; opacity: 0.95; margin-top: 8px; font-weight: 800; }
         .place-2 { height: 55%; background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%); animation-delay: 0.2s; }
-        .place-1 {
-            height: 85%; background: linear-gradient(180deg, var(--gold) 0%, #d97706 100%); animation-delay: 0.6s;
-            z-index: 10; box-shadow: 0 -14px 36px rgba(255, 214, 10, 0.5);
-        }
+        .place-1 { height: 85%; background: linear-gradient(180deg, var(--gold) 0%, #d97706 100%); animation-delay: 0.6s; z-index: 10; box-shadow: 0 -14px 36px rgba(255, 214, 10, 0.5); }
         .place-3 { height: 40%; background: linear-gradient(180deg, #b87333 0%, #78350f 100%); animation-delay: 0.4s; }
         @keyframes slideUpPodium { to { opacity: 1; transform: translateY(0); } }
 
-        /* ============ ROUND SUMMARY / RANK LIST ============ */
-        .rank-row {
-            display: flex; align-items: center; gap: 14px; background: var(--bg-elevated);
-            padding: 12px 16px; border-radius: 14px; margin-bottom: 10px; opacity: 0;
-            animation: rankIn 0.5s ease forwards; border: 1px solid rgba(255, 255, 255, 0.06);
-        }
+        /* ============ ROUND SUMMARY ============ */
+        .rank-row { display: flex; align-items: center; gap: 14px; background: var(--bg-elevated); padding: 12px 16px; border-radius: 14px; margin-bottom: 10px; opacity: 0; animation: rankIn 0.5s ease forwards; border: 1px solid rgba(255, 255, 255, 0.06); }
         @keyframes rankIn { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: translateX(0); } }
         .rank-row.rank-1 { background: linear-gradient(135deg, rgba(255,214,10,0.22), var(--bg-elevated)); border-color: var(--gold); box-shadow: 0 0 24px rgba(255,214,10,0.22); }
         .rank-medal { font-size: 24px; width: 38px; text-align: center; font-weight: 800; color: var(--text-muted); flex-shrink: 0; }
@@ -545,7 +481,6 @@
     </div>
 
     <div class="app-container">
-
         <!-- AUTH SCREEN (LOGIN / REGISTER) -->
         <div id="login-screen" class="screen active">
             <div style="text-align: center; margin-bottom: 26px;">
@@ -559,7 +494,6 @@
                 <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">✨ สมัครสมาชิก</button>
             </div>
 
-            <!-- LOGIN FORM -->
             <div id="auth-login-form">
                 <input type="text" id="login-name" placeholder="ชื่อผู้ใช้" autocomplete="username">
                 <input type="password" id="login-pass" placeholder="รหัสผ่าน" autocomplete="current-password">
@@ -568,7 +502,6 @@
                 <p class="auth-hint">ยังไม่มีบัญชี? <a onclick="switchAuthTab('register')">สมัครสมาชิกเลย</a></p>
             </div>
 
-            <!-- REGISTER FORM -->
             <div id="auth-register-form" style="display:none;">
                 <input type="text" id="reg-name" placeholder="ตั้งชื่อผู้ใช้ (ใช้เข้าเกม)" autocomplete="off">
                 <input type="password" id="reg-pass" placeholder="ตั้งรหัสผ่าน" autocomplete="new-password">
@@ -638,13 +571,9 @@
             </div>
 
             <div class="admin-grid">
-                <!-- LEFT COLUMN: CREATE & IMPORT -->
                 <div class="card">
                     <h3 style="font-size: 18px;">➕ จัดการคำถาม</h3>
-
-                    <button id="open-import-modal-btn" class="purple" style="margin-bottom: 20px;">
-                        📥 นำเข้าจาก JSON
-                    </button>
+                    <button id="open-import-modal-btn" class="purple" style="margin-bottom: 20px;">📥 นำเข้าจาก JSON</button>
 
                     <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 20px; margin-top: 10px;">
                         <h4 style="color: var(--accent-cool); margin-bottom: 15px; font-size: 15px;">สร้างคำถามใหม่</h4>
@@ -683,7 +612,6 @@
                     </div>
                 </div>
 
-                <!-- RIGHT COLUMN: GAME CONTROL -->
                 <div class="card">
                     <h3 style="font-size: 18px;">🎮 ควบคุมเกม</h3>
 
@@ -713,7 +641,7 @@
             </div>
         </div>
 
-        <!-- ROUND SUMMARY SCREEN (auto shows after each question) -->
+        <!-- ROUND SUMMARY SCREEN -->
         <div id="summary-screen" class="screen">
             <div style="text-align: center; margin-bottom: 20px;">
                 <div style="font-size: 56px; margin-bottom: 10px;">📊</div>
@@ -730,9 +658,7 @@
                 <h1 style="font-size: 32px;">สรุปผลคะแนน</h1>
                 <p style="color: var(--text-muted); margin-top: 8px;">ขอแสดงความยินดีกับผู้ชนะ!</p>
             </div>
-
             <div class="podium-container" id="podium-container"></div>
-
             <div style="text-align: center; margin-top: 50px;">
                 <button id="back-to-lobby-btn" style="width: auto; padding: 12px 40px;">กลับสู่หน้ารอ</button>
             </div>
@@ -758,16 +684,12 @@
         const db = getDatabase(app);
 
         // ================= SCORING TUNING =================
-        // ตอบเร็ว = ได้เต็ม, ตอบช้าสุด (พอดีหมดเวลา) = เหลือ 50% ของคะแนนเต็ม
         const SPEED_MIN_FACTOR = 0.5;
-        // โบนัสคอมโบ: เริ่ม 10% ที่คอมโบ 2 แล้วไต่ +2.5% ต่อคอมโบ สูงสุด 20%
         const COMBO_BASE_BONUS = 0.10;
         const COMBO_STEP_BONUS = 0.025;
         const COMBO_MAX_BONUS = 0.20;
-        // ระยะเวลาแสดงเฉลยก่อนเปิดกระดานสรุป / ระยะเวลาที่กระดานสรุปค้างอยู่
         const REVEAL_TO_SUMMARY_MS = 1500;
         const SUMMARY_DURATION_MS = 6000;
-        // เวลาแสดงโจทย์ล้วนๆ ก่อนช้อยส์จะขึ้น (มิลลิวินาที)
         const PREPARE_DURATION_MS = 3000;
 
         // ================= STATE =================
@@ -786,6 +708,13 @@
         let isPodiumActive = false;
         let isSummaryActive = false;
         let importedJsonData = null;
+
+        // เชื่อมโยงเวลาเครื่องกับเซิร์ฟเวอร์เพื่อให้เวลาตรงกันตลอด
+        let serverOffset = 0;
+        onValue(ref(db, '.info/serverTimeOffset'), (snap) => {
+            serverOffset = snap.val() || 0;
+        });
+        const getNow = () => Date.now() + serverOffset;
 
         let liveCurrentState = null;
         let liveSummaryState = null;
@@ -835,7 +764,6 @@
             } catch(e){}
         };
 
-        // นับตัวเลขไต่ขึ้นสวยๆ
         const animateNumber = (el, from, to, duration = 800) => {
             const start = performance.now();
             const step = (now) => {
@@ -847,7 +775,6 @@
             requestAnimationFrame(step);
         };
 
-        // ตัวเลขคะแนนลอยขึ้นตอนตอบถูก
         const showFloatingPoints = (base, bonus) => {
             const p1 = document.createElement('div');
             p1.className = 'float-point';
@@ -949,11 +876,9 @@
             for(let item of dataToImport) {
                 if(!item.text || !item.opt1 || !item.opt2 || !item.opt3 || !item.opt4 || !item.correct) continue;
                 await push(ref(db, 'questions'), {
-                    text: item.text,
-                    img: item.img || '',
+                    text: item.text, img: item.img || '',
                     opt1: item.opt1, opt2: item.opt2, opt3: item.opt3, opt4: item.opt4,
-                    correct: parseInt(item.correct),
-                    points: parseInt(item.points) || 1000,
+                    correct: parseInt(item.correct), points: parseInt(item.points) || 1000,
                     timeLimit: parseInt(item.timeLimit) || 20
                 });
                 successCount++;
@@ -966,18 +891,9 @@
         // ================= AUTH: LOGIN / REGISTER =================
         const ADMIN_NAME = '3007x';
 
-        // ---- session ถาวร: จำชื่อผู้ใช้ไว้สำหรับกลับเข้าเกมหลังรีเฟรช ----
-        // หมายเหตุ: โครงสร้าง members เดิมเก็บ password ใน RTDB เพื่อคงความเข้ากันได้กับระบบเดิม
-        function saveSession(name, pass) {
-            try { localStorage.setItem('quiz_session', JSON.stringify({ name, pass })); } catch(e){}
-        }
-        function loadSession() {
-            try { return JSON.parse(localStorage.getItem('quiz_session') || 'null'); } catch(e){ return null; }
-        }
-        function clearSession() {
-            try { localStorage.removeItem('quiz_session'); } catch(e){}
-            try { localStorage.removeItem('quiz_username'); } catch(e){}
-        }
+        function saveSession(name, pass) { try { localStorage.setItem('quiz_session', JSON.stringify({ name, pass })); } catch(e){} }
+        function loadSession() { try { return JSON.parse(localStorage.getItem('quiz_session') || 'null'); } catch(e){ return null; } }
+        function clearSession() { try { localStorage.removeItem('quiz_session'); localStorage.removeItem('quiz_username'); } catch(e){} }
 
         window.switchAuthTab = (tab) => {
             const isLogin = tab === 'login';
@@ -1004,7 +920,6 @@
             }
         }
 
-        // ---- LOGIN ----
         async function doLogin() {
             const name = document.getElementById('login-name').value.trim();
             const pass = document.getElementById('login-pass').value;
@@ -1014,7 +929,6 @@
             if(!name || !pass) { errEl.textContent = 'กรุณากรอกชื่อและรหัสผ่าน'; return; }
             if(name === ADMIN_NAME) { errEl.textContent = 'บัญชีนี้สงวนสำหรับแอดมิน'; return; }
 
-            // ตรวจสอบบัญชีใน Firebase (members/{name})
             const snap = await get(ref(db, 'members/' + name));
             if(!snap.exists()) { errEl.textContent = 'ไม่พบบัญชีนี้ กรุณาสมัครสมาชิกก่อน'; return; }
             if(snap.val().password !== pass) { errEl.textContent = 'รหัสผ่านไม่ถูกต้อง'; return; }
@@ -1022,7 +936,6 @@
             enterGame(name, pass);
         }
 
-        // ---- REGISTER ----
         async function doRegister() {
             const name = document.getElementById('reg-name').value.trim();
             const pass = document.getElementById('reg-pass').value;
@@ -1036,20 +949,17 @@
             if(pass !== pass2) { errEl.textContent = 'รหัสผ่านยืนยันไม่ตรงกัน'; return; }
             if(name === ADMIN_NAME) { errEl.textContent = 'ไม่สามารถใช้ชื่อนี้ได้'; return; }
 
-            // เช็กว่าชื่อซ้ำไหม
             const snap = await get(ref(db, 'members/' + name));
             if(snap.exists()) { errEl.textContent = 'ชื่อนี้ถูกใช้ไปแล้ว ลองชื่ออื่น'; return; }
 
-            await set(ref(db, 'members/' + name), { name, password: pass, createdAt: Date.now() });
+            await set(ref(db, 'members/' + name), { name, password: pass, createdAt: getNow() });
             showToast('สมัครสมาชิกสำเร็จ! เข้าสู่ระบบเลย', 'success');
 
-            // กลับไปหน้า login พร้อมกรอกชื่อไว้ให้แล้ว
             switchAuthTab('login');
             document.getElementById('login-name').value = name;
             document.getElementById('login-pass').focus();
         }
 
-        // ---- เข้าเกม (ใช้ร่วมกับ login + auto-relogin ตอนรีเฟรช) ----
         async function enterGame(name, pass, silent = false) {
             currentUser = name;
             saveSession(name, pass);
@@ -1058,9 +968,9 @@
                 const playerRef = ref(db, 'players/' + currentUser);
                 const existing = await get(playerRef);
                 if(existing.exists()) {
-                    await update(playerRef, { name: currentUser, lastActive: Date.now() });
+                    await update(playerRef, { name: currentUser, lastActive: getNow() });
                 } else {
-                    await set(playerRef, { name: currentUser, score: 0, streak: 0, lastRoundPoints: 0, lastRoundCorrect: null, lastActive: Date.now() });
+                    await set(playerRef, { name: currentUser, score: 0, streak: 0, lastRoundPoints: 0, lastRoundCorrect: null, lastActive: getNow() });
                 }
                 document.getElementById('display-player-name').textContent = currentUser;
                 switchScreen('player-screen');
@@ -1076,7 +986,6 @@
             }
         }
 
-        // กลับเข้าเกมอัตโนมัติหลังรีเฟรช โดยไม่รีเซ็ตคะแนน
         (async function autoLogin() {
             const sess = loadSession();
             if(!sess || !sess.name || !sess.pass) return;
@@ -1086,6 +995,7 @@
                 else clearSession();
             } catch(e) { clearSession(); }
         })();
+        
         document.getElementById('login-btn').addEventListener('click', doLogin);
         document.getElementById('register-btn').addEventListener('click', doRegister);
         document.getElementById('login-name').addEventListener('input', (e) => checkAdminName(e.target.value));
@@ -1146,7 +1056,7 @@
         window.logoutAdmin = () => {
             isAdmin = false;
             switchScreen('login-screen');
-            usernameInput.value = '';
+            document.getElementById('login-name').value = '';
             localStorage.removeItem('quiz_username');
             checkAdminName('');
         };
@@ -1234,14 +1144,12 @@
             if(!text || correct === 0) return showToast('กรอกคำถามและเฉลยด้วย!', 'warning');
 
             push(ref(db, 'questions'), {
-                text,
-                img: document.getElementById('q-img').value.trim(),
+                text, img: document.getElementById('q-img').value.trim(),
                 opt1: document.getElementById('q-opt1').value.trim(),
                 opt2: document.getElementById('q-opt2').value.trim(),
                 opt3: document.getElementById('q-opt3').value.trim(),
                 opt4: document.getElementById('q-opt4').value.trim(),
-                correct,
-                points: parseInt(document.getElementById('q-points').value) || 1000,
+                correct, points: parseInt(document.getElementById('q-points').value) || 1000,
                 timeLimit: parseInt(document.getElementById('q-time').value) || 20
             }).then(() => {
                 showToast('บันทึกลงคิวสำเร็จ!', 'success');
@@ -1259,16 +1167,17 @@
             data.questionId = key;
             data.showAnswer = false;
             data.revealedAt = null;
-            // เวลาเริ่มจริงถูกกำหนดจาก Admin เพียงครั้งเดียว ทุก client จึงเห็น deadline เดียวกัน
+            
             data.timeLimit = Math.max(1, parseInt(data.timeLimit, 10) || 20);
-            // แยก deadline ให้ชัดเจน: 3 วิเตรียมตัว -> เริ่มตอบ -> หมดเวลาตอบ
-            const prepareUntil = Date.now() + PREPARE_DURATION_MS;
+            
+            // อ้างอิงเวลาปัจจุบันที่ตรงกับเครื่อง Server จริงๆ เสมอ
+            const now = getNow();
+            const prepareUntil = now + PREPARE_DURATION_MS;
             data.prepareUntil = prepareUntil;
             data.answerStartAt = prepareUntil;
-            data.startedAt = prepareUntil; // compatibility กับข้อมูลเวอร์ชันเก่า
+            data.startedAt = prepareUntil; 
             data.endTime = prepareUntil + (data.timeLimit * 1000);
 
-            // รีเซ็ตคะแนนของรอบก่อนหน้า เพื่อให้กระดานสรุปคะแนนของรอบใหม่ถูกต้อง
             const playersSnap = await get(ref(db, 'players'));
             if(playersSnap.exists()) {
                 let resetUpdates = {};
@@ -1279,14 +1188,11 @@
                 await update(ref(db, 'players'), resetUpdates);
             }
 
-            // set() ทับทั้งก้อน gameState เพื่อล้างค่า podium/summary ค้างจากรอบก่อนไปในตัว
             await set(ref(db, 'gameState'), { current: data, podium: false, summary: { active: false } });
             await remove(ref(db, 'questions/' + key));
             showToast('ส่งคำถามแล้ว!', 'success');
         };
 
-        // เปิดคำถามแรกในคิวให้อัตโนมัติหลังจบรอบสรุปคะแนน
-        // จำกัดให้ทำจากแท็บ Admin เท่านั้น ป้องกันผู้เล่นหลายเครื่องเขียน state แข่งกัน
         async function advanceToNextQuestion(completedQuestionId) {
             if(!isAdmin || autoAdvancedFor === completedQuestionId) return;
             autoAdvancedFor = completedQuestionId;
@@ -1307,15 +1213,14 @@
         }
 
         document.getElementById('show-answer-btn').addEventListener('click', () => {
-            const now = Date.now();
+            const now = getNow();
             update(ref(db, 'gameState/current'), { showAnswer: true, revealedAt: now, summaryAt: now + REVEAL_TO_SUMMARY_MS });
             showToast('แสดงเฉลยแล้ว', 'success');
         });
 
         document.getElementById('clear-current-q-btn').addEventListener('click', () => {
-            // ใช้ timestamp ยืนยันว่าเป็นการซ่อนโดย Admin และกัน auto-engine เขียนกลับ
-            set(ref(db, 'gameState/current'), { active: false, hiddenAt: Date.now() });
-            set(ref(db, 'gameState/summary'), { active: false, hiddenAt: Date.now() });
+            set(ref(db, 'gameState/current'), { active: false, hiddenAt: getNow() });
+            set(ref(db, 'gameState/summary'), { active: false, hiddenAt: getNow() });
         });
 
         document.getElementById('trigger-podium-btn').addEventListener('click', () => {
@@ -1352,7 +1257,7 @@
             }
         };
 
-        // ================= ROUND SUMMARY (แท่นสรุปคะแนนหลังจบแต่ละข้อ) =================
+        // ================= ROUND SUMMARY =================
         async function renderSummaryScreen() {
             const snap = await get(ref(db, 'players'));
             let players = [];
@@ -1390,7 +1295,6 @@
                     </div>`;
             }).join('');
 
-            // เล่นแอนิเมชันบาร์ + ตัวเลขนับขึ้น
             requestAnimationFrame(() => {
                 document.querySelectorAll('#summary-list .rank-bar-fill').forEach(el => {
                     el.style.width = (el.dataset.targetWidth || 0) + '%';
@@ -1451,12 +1355,10 @@
                 }
             });
 
-            // ---- แคชสถานะ current ไว้ให้ auto-engine ใช้ ----
             onValue(ref(db, 'gameState/current'), (snapshot) => {
                 liveCurrentState = snapshot.exists() ? snapshot.val() : null;
             });
 
-            // ---- กระดานสรุปคะแนนอัตโนมัติ (เด้งขึ้นเอง / หุบเอง) ----
             onValue(ref(db, 'gameState/summary'), (snapshot) => {
                 const val = snapshot.exists() ? snapshot.val() : null;
                 liveSummaryState = val;
@@ -1472,13 +1374,14 @@
                 }
             });
 
-            // ---- Auto-engine: เฉลยอัตโนมัติเมื่อหมดเวลา + เปิด/ปิดกระดานสรุปเอง ----
-            // ทำงานอยู่ในทุกแท็บที่เปิดหน้านี้ค้างไว้ (ทั้งแอดมินและผู้เล่น) เพื่อความชัวร์
+            // Auto-engine
             if(autoEngineStarted) return;
             autoEngineStarted = true;
             setInterval(() => {
                 if(!liveCurrentState || !liveCurrentState.active) return;
-                const now = Date.now();
+                
+                // ใช้อ้างอิงเวลาที่ซิงค์กับเซิร์ฟเวอร์
+                const now = getNow();
 
                 if(!liveCurrentState.showAnswer
                    && liveCurrentState.answerStartAt
@@ -1503,14 +1406,13 @@
                    && summaryHiddenFor !== liveSummaryState.questionId) {
                     summaryHiddenFor = liveSummaryState.questionId;
                     const completedQuestionId = liveSummaryState.questionId;
-                    // ปิดสรุปก่อน แล้วค่อยเปิดข้อถัดไป เพื่อให้ทุก client เปลี่ยนหน้าตามลำดับ
                     set(ref(db, 'gameState/summary'), { active: false, completedAt: now })
                         .then(() => advanceToNextQuestion(completedQuestionId))
                         .catch(()=>{});
                 }
             }, 500);
 
-            // ---- หน้าจอผู้เล่น: แสดงคำถาม/ตัวเลือก/ตัวจับเวลา ----
+            // ผู้เล่น
             onValue(ref(db, 'gameState/current'), (snapshot) => {
                 if(isPodiumActive || isAdmin || isSummaryActive) return;
 
@@ -1519,10 +1421,9 @@
 
                 if(snapshot.exists() && snapshot.val().active) {
                     const data = snapshot.val();
-                    // รองรับคำถามเก่า: สร้าง deadline ชุดใหม่ที่แยกจากช่วงเตรียมตัว
                     data.timeLimit = Math.max(1, parseInt(data.timeLimit, 10) || 20);
                     if(!Number(data.answerStartAt)) {
-                        data.answerStartAt = Number(data.startedAt) || (Date.now() + PREPARE_DURATION_MS);
+                        data.answerStartAt = Number(data.startedAt) || (getNow() + PREPARE_DURATION_MS);
                     }
                     if(!Number(data.prepareUntil)) data.prepareUntil = data.answerStartAt;
                     if(!Number(data.endTime) || data.endTime <= data.answerStartAt) {
@@ -1556,41 +1457,36 @@
                         timerDisplay.textContent = '—';
                         ringProgress.style.strokeDashoffset = 0;
 
-                        // ---- PHASE 1: แสดงโจทย์ล้วน 3 วินาที ก่อนช้อยส์ขึ้น ----
                         preparePhaseActive = true;
                         const prepBanner = document.getElementById('prepare-banner');
                         const prepCountdown = document.getElementById('prepare-countdown');
                         const optsGrid = document.getElementById('player-options-grid');
 
-                        // รีเซ็ต animation classes ก่อน เผื่อเป็นข้อใหม่
                         document.getElementById('player-question-text').classList.remove('anim-question-in');
                         document.getElementById('player-question-img').classList.remove('anim-img-in');
                         document.getElementById('player-timer-wrap').classList.remove('anim-timer-in');
-                        void document.getElementById('player-question-text').offsetWidth; // force reflow
+                        void document.getElementById('player-question-text').offsetWidth;
 
                         prepBanner.classList.remove('anim-banner-out');
                         prepBanner.style.display = 'block';
                         optsGrid.style.display = 'none';
 
-                        // โจทย์ + รูป เลื่อนเข้ามาพร้อมกัน
                         document.getElementById('player-question-text').classList.add('anim-question-in');
                         const imgElPre = document.getElementById('player-question-img');
                         if(imgElPre.style.display !== 'none') imgElPre.classList.add('anim-img-in');
 
-                        // ใช้เวลาที่อยู่ใน Firebase เป็นหลัก ห้ามเริ่มนับใหม่ตามเวลาที่ listener ทำงาน
-                        const questionStartAt = Number(data.prepareUntil) || Number(data.answerStartAt) || (Date.now() + PREPARE_DURATION_MS);
+                        const questionStartAt = Number(data.prepareUntil) || Number(data.answerStartAt) || (getNow() + PREPARE_DURATION_MS);
                         let prepRemaining = Math.ceil(PREPARE_DURATION_MS / 1000);
                         prepCountdown.textContent = prepRemaining;
 
                         prepareInterval = setInterval(() => {
-                            const remainMs = questionStartAt - Date.now();
+                            const remainMs = questionStartAt - getNow();
                             prepRemaining = Math.max(0, Math.ceil(remainMs / 1000));
                             prepCountdown.textContent = prepRemaining;
                             if(remainMs <= 0) {
                                 clearInterval(prepareInterval);
                                 preparePhaseActive = false;
 
-                                // banner หดหายไปก่อน 0.3 วิ แล้วช้อยส์ค่อยเด้งขึ้น
                                 prepBanner.classList.add('anim-banner-out');
                                 setTimeout(() => {
                                     prepBanner.style.display = 'none';
@@ -1598,7 +1494,6 @@
                                 }, 300);
 
                                 optsGrid.style.display = 'grid';
-                                // ช้อยส์เด้งขึ้นทีละปุ่ม หน่วง 0.08 วิ ต่อปุ่ม
                                 document.querySelectorAll('#player-options-grid .option-btn').forEach((btn, i) => {
                                     btn.classList.remove('anim-option-in');
                                     btn.style.animationDelay = (i * 0.08) + 's';
@@ -1606,7 +1501,6 @@
                                     btn.classList.add('anim-option-in');
                                 });
 
-                                // วงจับเวลาหล่นลงมา
                                 const timerWrapEl = document.getElementById('player-timer-wrap');
                                 timerWrapEl.style.visibility = 'visible';
                                 timerWrapEl.classList.remove('anim-timer-in');
@@ -1654,11 +1548,9 @@
                         }
                         lockButtons();
                         const correctNum = parseInt(data.correct);
-                        // รองรับกรณีรีเฟรชหน้าระหว่างรอบ โดยอ่านคำตอบจาก Firebase
                         if(mySelectedOption == null && data.answers && data.answers[currentUser] != null) {
                             mySelectedOption = parseInt(data.answers[currentUser]);
                         }
-                        // คำนวณและบันทึกคะแนนหลังเฉลยเท่านั้น ไม่ให้คะแนนเด้งก่อนบอกผล
                         if(scoreAppliedFor !== data.questionId) {
                             scoreAppliedFor = data.questionId;
                             const answerAt = Number((data.answerTimes || {})[currentUser]) || myAnsweredAt;
@@ -1718,7 +1610,6 @@
                     preparePhaseActive = false;
                     document.getElementById('prepare-banner').style.display = 'none';
                     document.getElementById('player-options-grid').style.display = 'none';
-                    // เคลียร์ animation classes เผื่อข้อถัดไป
                     document.getElementById('player-question-text').classList.remove('anim-question-in');
                     document.getElementById('player-question-img').classList.remove('anim-img-in');
                     document.getElementById('player-timer-wrap').classList.remove('anim-timer-in');
@@ -1730,7 +1621,6 @@
             });
         }
 
-        // เริ่มตัวจับเวลาคำถามหลังจากหมดช่วง prepare 3 วินาที
         function startQuestionTimer(data) {
             clearInterval(timerInterval);
             const timerWrap = document.getElementById('player-timer-wrap');
@@ -1741,11 +1631,11 @@
 
             const totalTimeMs = Math.max(1, Number(data.timeLimit) || 20) * 1000;
             const basePoints = data.points || 1000;
-            const endTime = Number(data.endTime) || (Date.now() + totalTimeMs);
+            const endTime = Number(data.endTime) || (getNow() + totalTimeMs);
             timerWrap.style.visibility = 'visible';
 
             timerInterval = setInterval(() => {
-                const remainingMs = Math.max(0, endTime - Date.now());
+                const remainingMs = Math.max(0, endTime - getNow());
                 const timeLeft = Math.ceil(remainingMs / 1000);
                 timerDisplay.textContent = timeLeft;
 
@@ -1770,7 +1660,6 @@
                         document.getElementById('answer-result-text').innerHTML = "หมดเวลา! ⏳<br><span style='font-size:14px;color:var(--text-muted)'>คอมโบถูกรีเซ็ต</span>";
                         document.getElementById('answer-result-text').style.color = "var(--danger)";
                         document.getElementById('answer-result-text').style.display = "block";
-                        // ยังไม่เขียนผลลงผู้เล่นจนกว่า Admin/auto-engine จะเปิดเฉลย
                     }
                 }
             }, 200);
@@ -1788,7 +1677,7 @@
             if(preparePhaseActive) return;
             hasAnsweredCurrent = true;
             mySelectedOption = selectedNumber;
-            myAnsweredAt = Date.now();
+            myAnsweredAt = getNow();
 
             lockButtons();
             document.getElementById(`p-opt-${selectedNumber}`).classList.add('selected');
@@ -1805,9 +1694,9 @@
             const correctNum = parseInt(qArea.dataset.correct);
             const basePoints = parseInt(qArea.dataset.points) || 1000;
             const totalTimeMs = (parseInt(qArea.dataset.timeLimit) || 20) * 1000;
-            const endTime = parseInt(qArea.dataset.endTime) || (Date.now() + totalTimeMs);
-            const remainingMs = Math.max(0, endTime - Date.now());
-            const timeFraction = 1 - Math.min(1, remainingMs / totalTimeMs); // 0 = ตอบทันที, 1 = พอดีหมดเวลา
+            const endTime = parseInt(qArea.dataset.endTime) || (getNow() + totalTimeMs);
+            const remainingMs = Math.max(0, endTime - getNow());
+            const timeFraction = 1 - Math.min(1, remainingMs / totalTimeMs); 
             const speedFactor = 1 - (timeFraction * (1 - SPEED_MIN_FACTOR));
 
             if(selectedNumber === correctNum) {
@@ -1815,15 +1704,16 @@
                 const earnedBase = Math.max(1, Math.round(basePoints * speedFactor));
                 const bonusPercent = newStreak >= 2 ? Math.min(COMBO_BASE_BONUS + (newStreak - 2) * COMBO_STEP_BONUS, COMBO_MAX_BONUS) : 0;
                 const bonus = Math.round(earnedBase * bonusPercent);
-                const totalEarned = earnedBase + bonus;
 
                 myEarnedBase = earnedBase;
                 myBonus = bonus;
-
-                showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'success');
             } else {
-                showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'normal');
+                myEarnedBase = 0;
+                myBonus = 0;
             }
+
+            // แสดงแจ้งเตือนเป็นสีเขียวเหมือนกันหมด ไม่ว่าจะตอบถูกหรือผิด เพื่อไม่ให้จับทางได้
+            showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'success');
         };
 
     </script>
