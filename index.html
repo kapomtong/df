@@ -78,7 +78,8 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        html, body { height: 100%; }
+        html { min-height: 100%; }
+        body { min-height: 100dvh; } /* ให้หน้ายาวเลื่อนได้ ไม่ถูกตัดด้านบนบนมือถือ */
 
         body {
             font-family: 'Noto Sans Thai', 'Kanit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -463,6 +464,40 @@
             .option-btn { min-height: 64px; font-size: 14px; padding: 14px 10px; }
         }
 
+        /* ============ OPTION IMAGES (player) ============ */
+        .option-btn .opt-row { display: flex; align-items: center; justify-content: center; gap: 10px; min-width: 0; }
+        .opt-img { display: none; width: 100%; height: 96px; object-fit: cover; border-radius: 10px; background: rgba(0, 0, 0, 0.2); pointer-events: none; }
+        .option-btn.has-img { flex-direction: column; gap: 8px; padding: 10px 10px 12px; }
+        .option-btn.has-img .opt-img { display: block; }
+        .option-btn.has-img .opt-label { text-align: center; }
+        @media (min-width: 641px) { .opt-img { height: 150px; } }
+
+        /* ============ AUTO IMAGE + EDIT MODAL (admin) ============ */
+        .auto-img-box { background: var(--bg-elevated); border-radius: 14px; padding: 10px 14px; margin: 14px 0; }
+        .auto-img-box label { display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text-bright); }
+        .auto-img-box input[type="checkbox"] { width: 22px; height: 22px; margin: 0; padding: 0; flex-shrink: 0; accent-color: var(--accent-cool); }
+        .auto-img-sub { display: none; padding-left: 32px; }
+        .auto-img-box.on .auto-img-sub { display: block; }
+        .auto-img-sub label { font-weight: 500; font-size: 13px; color: var(--text-muted); }
+        .auto-img-hint { font-size: 11px; color: var(--text-muted); margin: 0 0 4px 32px; }
+
+        #edit-modal .modal-content { max-width: 560px; }
+        .ed-label { display: block; font-size: 12px; font-weight: 700; color: var(--accent-cool); margin: 0 0 4px; }
+        .img-slot { display: flex; gap: 10px; align-items: stretch; margin-bottom: 14px; padding: 10px; border-radius: 14px; background: var(--bg-elevated); }
+        .img-thumb { position: relative; width: 84px; min-height: 84px; flex-shrink: 0; border-radius: 10px; overflow: hidden; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+        .img-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+        .img-ctrl { flex: 1; min-width: 0; }
+        .img-ctrl input { padding: 10px 12px; margin-bottom: 8px; font-size: 16px; }
+        .img-btns { display: flex; gap: 8px; }
+        .img-btns button { padding: 10px 8px; font-size: 13px; min-height: 44px; }
+        .img-btns .img-next { flex: 1; }
+        .img-btns .img-clear { width: 48px; flex: none; }
+        .img-info { display: block; font-size: 11px; color: var(--text-muted); margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .opt-edit-head { font-size: 13px; font-weight: 800; margin: 4px 0 6px; }
+        #edit-modal textarea, #edit-modal input[type="text"], #edit-modal input[type="number"], #edit-modal select { font-size: 16px; }
+        .list-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+        .list-actions button { width: auto; padding: 8px 14px; font-size: 13px; min-height: 40px; }
+
         /* ============ SETTINGS (GEAR + BOTTOM SHEET) ============ */
         #settings-btn {
             position: fixed; z-index: 400;
@@ -626,6 +661,96 @@
         </div>
     </div>
 
+    <!-- EDIT QUESTION MODAL -->
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>✏️ แก้ไขคำถาม</h2>
+            <label class="ed-label">คำถาม</label>
+            <textarea id="ed-text" rows="2" placeholder="พิมพ์คำถามที่นี่..."></textarea>
+            <label class="ed-label">รูปประกอบโจทย์</label>
+            <div class="img-slot" data-slot="q">
+                <div class="img-thumb"><span class="ph">🖼️</span><img alt=""></div>
+                <div class="img-ctrl">
+                    <input type="text" class="img-query" id="ed-imgq" placeholder="คำค้นหารูป (เว้นว่าง = ใช้ข้อความคำถาม)"><input type="text" class="img-url" placeholder="URL รูป (เว้นว่างได้)" inputmode="url">
+                    <div class="img-btns">
+                        <button class="img-next purple" type="button">🔍 หาภาพ</button>
+                        <button class="img-clear danger" type="button" aria-label="ลบรูป">🗑️</button>
+                    </div>
+                    <span class="img-info"></span>
+                </div>
+            </div>
+            
+            <p class="opt-edit-head" style="color: var(--opt-a);">▲ ตัวเลือกที่ 1</p>
+            <input type="text" id="ed-opt1" placeholder="ตัวเลือกที่ 1">
+            <div class="img-slot" data-slot="1">
+                <div class="img-thumb"><span class="ph">🖼️</span><img alt=""></div>
+                <div class="img-ctrl">
+                    <input type="text" class="img-url" placeholder="URL รูป (เว้นว่างได้)" inputmode="url">
+                    <div class="img-btns">
+                        <button class="img-next purple" type="button">🔍 หาภาพ</button>
+                        <button class="img-clear danger" type="button" aria-label="ลบรูป">🗑️</button>
+                    </div>
+                    <span class="img-info"></span>
+                </div>
+            </div>
+            <p class="opt-edit-head" style="color: var(--opt-b);">◆ ตัวเลือกที่ 2</p>
+            <input type="text" id="ed-opt2" placeholder="ตัวเลือกที่ 2">
+            <div class="img-slot" data-slot="2">
+                <div class="img-thumb"><span class="ph">🖼️</span><img alt=""></div>
+                <div class="img-ctrl">
+                    <input type="text" class="img-url" placeholder="URL รูป (เว้นว่างได้)" inputmode="url">
+                    <div class="img-btns">
+                        <button class="img-next purple" type="button">🔍 หาภาพ</button>
+                        <button class="img-clear danger" type="button" aria-label="ลบรูป">🗑️</button>
+                    </div>
+                    <span class="img-info"></span>
+                </div>
+            </div>
+            <p class="opt-edit-head" style="color: var(--opt-c);">● ตัวเลือกที่ 3</p>
+            <input type="text" id="ed-opt3" placeholder="ตัวเลือกที่ 3">
+            <div class="img-slot" data-slot="3">
+                <div class="img-thumb"><span class="ph">🖼️</span><img alt=""></div>
+                <div class="img-ctrl">
+                    <input type="text" class="img-url" placeholder="URL รูป (เว้นว่างได้)" inputmode="url">
+                    <div class="img-btns">
+                        <button class="img-next purple" type="button">🔍 หาภาพ</button>
+                        <button class="img-clear danger" type="button" aria-label="ลบรูป">🗑️</button>
+                    </div>
+                    <span class="img-info"></span>
+                </div>
+            </div>
+            <p class="opt-edit-head" style="color: var(--opt-d);">■ ตัวเลือกที่ 4</p>
+            <input type="text" id="ed-opt4" placeholder="ตัวเลือกที่ 4">
+            <div class="img-slot" data-slot="4">
+                <div class="img-thumb"><span class="ph">🖼️</span><img alt=""></div>
+                <div class="img-ctrl">
+                    <input type="text" class="img-url" placeholder="URL รูป (เว้นว่างได้)" inputmode="url">
+                    <div class="img-btns">
+                        <button class="img-next purple" type="button">🔍 หาภาพ</button>
+                        <button class="img-clear danger" type="button" aria-label="ลบรูป">🗑️</button>
+                    </div>
+                    <span class="img-info"></span>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 6px;">
+                <div>
+                    <label class="ed-label">เฉลย</label>
+                    <select id="ed-correct" style="margin-bottom: 0;">
+                        <option value="0">-- เลือก --</option><option value="1">ข้อ 1</option><option value="2">ข้อ 2</option><option value="3">ข้อ 3</option><option value="4">ข้อ 4</option>
+                    </select>
+                </div>
+                <div><label class="ed-label">คะแนนเต็ม</label><input type="number" id="ed-points" min="1" style="margin-bottom: 0;"></div>
+                <div><label class="ed-label">เวลา (วิ)</label><input type="number" id="ed-time" min="5" style="margin-bottom: 0;"></div>
+            </div>
+            <button id="ed-auto-all" class="purple" type="button" style="margin: 16px 0 10px;">🪄 หารูปที่ยังว่างให้อัตโนมัติ</button>
+            <p class="auth-error" id="ed-error"></p>
+            <div style="display: flex; gap: 10px;">
+                <button id="ed-cancel" class="danger" type="button">ยกเลิก</button>
+                <button id="ed-save" class="success" type="button">💾 บันทึก</button>
+            </div>
+        </div>
+    </div>
+
     <!-- PIN MODAL -->
     <div id="pin-modal" class="modal-overlay">
         <div class="modal-content">
@@ -673,6 +798,15 @@
     "timeLimit": 20
   }
 ]' style="font-family: 'Courier New', monospace; font-size: 13px;"></textarea>
+            </div>
+
+            <div class="auto-img-box" id="imp-box">
+                <label><input type="checkbox" id="imp-auto"> 🖼️ หารูปให้อัตโนมัติ</label>
+                <div class="auto-img-sub">
+                    <label><input type="checkbox" id="imp-auto-q" checked> รูปประกอบโจทย์</label>
+                    <label><input type="checkbox" id="imp-auto-opt" checked> รูปในตัวเลือก (ชื่อคน/ตัวละคร/สิ่งของ)</label>
+                    <p class="auto-img-hint">ไม่แทนที่รูปที่ใส่ไว้แล้ว · ถ้าภาพผิด กด ✏️ แก้ไข แล้วกด "เปลี่ยนภาพ"</p>
+                </div>
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -751,15 +885,15 @@
                 <p class="potential-points">⚡ ตอบตอนนี้ได้<span id="potential-points-val">1000</span> คะแนน</p>
                 <h2 id="player-question-text" style="margin-bottom: 8px; font-size: 20px;">คำถาม?</h2>
                 <p id="player-question-points" style="text-align: center; color: var(--gold); font-weight: 700; margin-bottom: 20px; font-size: 15px; background: none; -webkit-text-fill-color: var(--gold);">(1000 คะแนนเต็ม)</p>
-                <img id="player-question-img" class="question-image" src="" alt="">
+                <img id="player-question-img" class="question-image" src="" alt="" onerror="this.style.display='none'">
                 <div id="prepare-banner" class="prepare-banner" style="display: none;">
                     เตรียมตัวให้พร้อม!<span class="countdown" id="prepare-countdown">3</span>
                 </div>
                 <div class="options-grid" id="player-options-grid" style="display: none;">
-                    <button class="option-btn opt-a" onclick="submitAnswer(1)" id="p-opt-1"><span class="opt-shape">▲</span><span class="opt-label" id="p-opt-1-label">ตัวเลือก 1</span></button>
-                    <button class="option-btn opt-b" onclick="submitAnswer(2)" id="p-opt-2"><span class="opt-shape">◆</span><span class="opt-label" id="p-opt-2-label">ตัวเลือก 2</span></button>
-                    <button class="option-btn opt-c" onclick="submitAnswer(3)" id="p-opt-3"><span class="opt-shape">●</span><span class="opt-label" id="p-opt-3-label">ตัวเลือก 3</span></button>
-                    <button class="option-btn opt-d" onclick="submitAnswer(4)" id="p-opt-4"><span class="opt-shape">■</span><span class="opt-label" id="p-opt-4-label">ตัวเลือก 4</span></button>
+                    <button class="option-btn opt-a" onclick="submitAnswer(1)" id="p-opt-1"><img class="opt-img" id="p-opt-1-img" alt="" onerror="this.parentNode.classList.remove('has-img')"><span class="opt-row"><span class="opt-shape">▲</span><span class="opt-label" id="p-opt-1-label">ตัวเลือก 1</span></span></button>
+                    <button class="option-btn opt-b" onclick="submitAnswer(2)" id="p-opt-2"><img class="opt-img" id="p-opt-2-img" alt="" onerror="this.parentNode.classList.remove('has-img')"><span class="opt-row"><span class="opt-shape">◆</span><span class="opt-label" id="p-opt-2-label">ตัวเลือก 2</span></span></button>
+                    <button class="option-btn opt-c" onclick="submitAnswer(3)" id="p-opt-3"><img class="opt-img" id="p-opt-3-img" alt="" onerror="this.parentNode.classList.remove('has-img')"><span class="opt-row"><span class="opt-shape">●</span><span class="opt-label" id="p-opt-3-label">ตัวเลือก 3</span></span></button>
+                    <button class="option-btn opt-d" onclick="submitAnswer(4)" id="p-opt-4"><img class="opt-img" id="p-opt-4-img" alt="" onerror="this.parentNode.classList.remove('has-img')"><span class="opt-row"><span class="opt-shape">■</span><span class="opt-label" id="p-opt-4-label">ตัวเลือก 4</span></span></button>
                 </div>
                 <div id="answer-result-text" style="text-align: center; margin-top: 20px; font-weight: 700; font-size: 19px; display: none;"></div>
             </div>
@@ -809,6 +943,15 @@
                             </div>
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px;">⚡ ตอบเร็ว = ได้คะแนนเต็ม / ตอบช้าใกล้หมดเวลา = เหลือประมาณ 50% ของคะแนนเต็ม</p>
+
+                        <div class="auto-img-box" id="q-box">
+                <label><input type="checkbox" id="q-auto"> 🖼️ หารูปให้อัตโนมัติ</label>
+                <div class="auto-img-sub">
+                    <label><input type="checkbox" id="q-auto-q" checked> รูปประกอบโจทย์</label>
+                    <label><input type="checkbox" id="q-auto-opt" checked> รูปในตัวเลือก (ชื่อคน/ตัวละคร/สิ่งของ)</label>
+                    <p class="auto-img-hint">ไม่แทนที่รูปที่ใส่ไว้แล้ว · ถ้าภาพผิด กด ✏️ แก้ไข แล้วกด "เปลี่ยนภาพ"</p>
+                </div>
+            </div>
 
                         <button id="add-question-btn" class="success">บันทึกลงคิว</button>
                     </div>
@@ -1046,6 +1189,174 @@
             reader.readAsText(file);
         }
 
+        // ================= AUTO IMAGE FINDER (Wikipedia / Wikimedia Commons) =================
+        const IMG_BAD = /\.(svg|pdf|tiff?|webm|ogg|ogv|oga|djvu)(\.|\?|$)/i;
+        const IMG_LIMIT = 6;
+
+        async function wikiThumbs(lang, query) {
+            const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}`
+                + `&gsrlimit=${IMG_LIMIT}&prop=pageimages&piprop=thumbnail&pithumbsize=600&format=json&origin=*`;
+            const j = await (await fetch(url)).json();
+            const pages = j.query ? Object.values(j.query.pages) : [];
+            return pages.sort((a, b) => a.index - b.index)
+                .filter(pg => pg.thumbnail && !IMG_BAD.test(pg.thumbnail.source))
+                .map(pg => ({ url: pg.thumbnail.source, title: pg.title }));
+        }
+        async function commonsImages(query) {
+            const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}`
+                + `&gsrlimit=8&prop=imageinfo&iiprop=url|mime&iiurlwidth=600&format=json&origin=*`;
+            const j = await (await fetch(url)).json();
+            const pages = j.query ? Object.values(j.query.pages) : [];
+            return pages.sort((a, b) => a.index - b.index)
+                .filter(pg => pg.imageinfo && pg.imageinfo[0] && /^image\/(jpeg|png|webp)$/.test(pg.imageinfo[0].mime))
+                .map(pg => ({ url: pg.imageinfo[0].thumburl || pg.imageinfo[0].url, title: (pg.title || '').replace(/^File:/, '') }));
+        }
+
+        const imgCache = new Map();
+        // full=false: เร็ว (ใช้ตอนหาอัตโนมัติ) / full=true: รวมหลายแหล่งไว้ให้กดเปลี่ยนภาพ
+        async function findImages(query, full = false) {
+            query = (query || '').trim().slice(0, 80);
+            if(!query) return [];
+            const key = (full ? 'F:' : 'Q:') + query;
+            if(imgCache.has(key)) return imgCache.get(key);
+            const job = (async () => {
+                const safe = (p) => p.catch(() => []);
+                let groups;
+                if(full) {
+                    groups = await Promise.all([safe(wikiThumbs('th', query)), safe(wikiThumbs('en', query)), safe(commonsImages(query))]);
+                } else {
+                    groups = [await safe(wikiThumbs('th', query))];
+                    if(!groups[0].length) groups.push(await safe(wikiThumbs('en', query)));
+                }
+                const seen = new Set(), list = [];
+                groups.flat().forEach(x => { if(!seen.has(x.url)) { seen.add(x.url); list.push(x); } });
+                return list;
+            })();
+            imgCache.set(key, job);
+            const list = await job;
+            if(!list.length) imgCache.delete(key);
+            return list;
+        }
+
+        const looksLikeName = (t) => { t = (t || '').trim(); return t.length >= 2 && t.length <= 50 && !/^[\d\s.,:%฿$+\-–\/]+$/.test(t); };
+
+        // เติมรูปให้คำถาม (เฉพาะช่องที่ยังว่าง) — ไม่ต้องให้แอดมินยืนยัน
+        async function autoFillImages(q, want = { q: true, opt: true }) {
+            const jobs = [];
+            if(want.q && !q.img) jobs.push(findImages(q.imgQuery || q.text).then(l => { if(l[0]) q.img = l[0].url; }).catch(() => {}));
+            if(want.opt) for(let i = 1; i <= 4; i++) {
+                if(!q['img' + i] && looksLikeName(q['opt' + i])) jobs.push(findImages(q['opt' + i]).then(l => { if(l[0]) q['img' + i] = l[0].url; }).catch(() => {}));
+            }
+            await Promise.all(jobs);
+            return q;
+        }
+
+        function bindAutoBox(pre) {
+            const main = document.getElementById(pre + '-auto'), box = document.getElementById(pre + '-box');
+            main.addEventListener('change', () => box.classList.toggle('on', main.checked));
+        }
+        const readAutoBox = (pre) => ({
+            on: document.getElementById(pre + '-auto').checked,
+            want: { q: document.getElementById(pre + '-auto-q').checked, opt: document.getElementById(pre + '-auto-opt').checked }
+        });
+        bindAutoBox('imp'); bindAutoBox('q');
+
+        // ================= EDIT QUESTION =================
+        let editKey = null;
+        const $e = (id) => document.getElementById(id);
+        const slotEl = (n) => document.querySelector(`#edit-modal .img-slot[data-slot="${n}"]`);
+        const slotUrl = (n) => slotEl(n).querySelector('.img-url').value.trim();
+
+        function refreshSlot(n) {
+            const el = slotEl(n), url = slotUrl(n), img = el.querySelector('img'), ph = el.querySelector('.ph');
+            if(url) { img.src = url; img.style.display = 'block'; ph.style.display = 'none'; }
+            else { img.removeAttribute('src'); img.style.display = 'none'; ph.style.display = ''; }
+            el.querySelector('.img-next').textContent = url ? '🔄 เปลี่ยนภาพ' : '🔍 หาภาพ';
+        }
+        function setSlot(n, url, info = '') {
+            const el = slotEl(n);
+            el.querySelector('.img-url').value = url || '';
+            el.querySelector('.img-info').textContent = info;
+            refreshSlot(n);
+        }
+        const slotQuery = (n) => n === 'q' ? ($e('ed-imgq').value.trim() || $e('ed-text').value.trim()) : $e('ed-opt' + n).value.trim();
+
+        async function changeSlotImage(n) {
+            const el = slotEl(n), info = el.querySelector('.img-info'), btn = el.querySelector('.img-next');
+            const query = slotQuery(n);
+            if(!query) { showToast(n === 'q' ? 'พิมพ์คำถามหรือคำค้นหาก่อน' : 'พิมพ์ตัวเลือกก่อนหารูป', 'warning'); return; }
+            btn.disabled = true; info.textContent = 'กำลังหารูป…';
+            try {
+                const list = await findImages(query, true);
+                if(!list.length) { info.textContent = 'ไม่พบรูป ลองเปลี่ยนคำค้นหา หรือวาง URL เอง'; return; }
+                const cur = slotUrl(n);
+                const idx = (list.findIndex(x => x.url === cur) + 1) % list.length;
+                setSlot(n, list[idx].url, `ภาพที่ ${idx + 1}/${list.length} · ${list[idx].title}`);
+            } catch(e) {
+                info.textContent = 'หารูปไม่สำเร็จ (ตรวจอินเทอร์เน็ต)';
+            } finally { btn.disabled = false; }
+        }
+
+        document.querySelectorAll('#edit-modal .img-slot').forEach(el => {
+            const n = el.dataset.slot;
+            el.querySelector('.img-next').addEventListener('click', () => changeSlotImage(n));
+            el.querySelector('.img-clear').addEventListener('click', () => setSlot(n, ''));
+            el.querySelector('.img-url').addEventListener('change', () => { el.querySelector('.img-info').textContent = ''; refreshSlot(n); });
+            el.querySelector('img').addEventListener('error', () => {
+                if(slotUrl(n)) { el.querySelector('.img-info').textContent = 'โหลดรูปนี้ไม่ได้ — กด "เปลี่ยนภาพ"'; }
+                el.querySelector('img').style.display = 'none'; el.querySelector('.ph').style.display = '';
+            });
+        });
+
+        window.editQuestion = async (key) => {
+            const snap = await get(ref(db, 'questions/' + key));
+            if(!snap.exists()) { showToast('ไม่พบคำถามนี้ (อาจถูกส่งไปแล้ว)', 'warning'); return; }
+            const d = snap.val();
+            editKey = key;
+            $e('ed-text').value = d.text || '';
+            $e('ed-imgq').value = d.imgQuery || '';
+            for(let i = 1; i <= 4; i++) { $e('ed-opt' + i).value = d['opt' + i] || ''; setSlot(String(i), d['img' + i] || ''); }
+            setSlot('q', d.img || '');
+            $e('ed-correct').value = String(d.correct || 0);
+            $e('ed-points').value = d.points || 1000;
+            $e('ed-time').value = d.timeLimit || 20;
+            $e('ed-error').textContent = '';
+            $e('edit-modal').classList.add('active');
+        };
+
+        $e('ed-cancel').addEventListener('click', () => { $e('edit-modal').classList.remove('active'); editKey = null; });
+
+        $e('ed-auto-all').addEventListener('click', async () => {
+            const btn = $e('ed-auto-all'), label = btn.textContent;
+            btn.disabled = true; btn.textContent = '⏳ กำลังหารูป…';
+            const q = { text: $e('ed-text').value.trim(), imgQuery: $e('ed-imgq').value.trim(), img: slotUrl('q') };
+            for(let i = 1; i <= 4; i++) { q['opt' + i] = $e('ed-opt' + i).value.trim(); q['img' + i] = slotUrl(String(i)); }
+            await autoFillImages(q);
+            if(q.img && q.img !== slotUrl('q')) setSlot('q', q.img, 'หาให้อัตโนมัติ');
+            for(let i = 1; i <= 4; i++) if(q['img' + i] && q['img' + i] !== slotUrl(String(i))) setSlot(String(i), q['img' + i], 'หาให้อัตโนมัติ');
+            btn.disabled = false; btn.textContent = label;
+        });
+
+        $e('ed-save').addEventListener('click', async () => {
+            const err = $e('ed-error'); err.textContent = '';
+            const text = $e('ed-text').value.trim(), correct = parseInt($e('ed-correct').value);
+            if(!text || !correct) { err.textContent = 'กรอกคำถามและเฉลยด้วย'; return; }
+            try {
+                const cur = await get(ref(db, 'questions/' + editKey));
+                if(!cur.exists()) { showToast('คำถามนี้ถูกส่งไปแล้ว แก้ไขไม่ได้', 'warning'); $e('edit-modal').classList.remove('active'); return; }
+                await update(ref(db, 'questions/' + editKey), {
+                    text, imgQuery: $e('ed-imgq').value.trim(), img: slotUrl('q'),
+                    opt1: $e('ed-opt1').value.trim(), opt2: $e('ed-opt2').value.trim(),
+                    opt3: $e('ed-opt3').value.trim(), opt4: $e('ed-opt4').value.trim(),
+                    img1: slotUrl('1'), img2: slotUrl('2'), img3: slotUrl('3'), img4: slotUrl('4'),
+                    correct, points: parseInt($e('ed-points').value) || 1000, timeLimit: parseInt($e('ed-time').value) || 20
+                });
+                $e('edit-modal').classList.remove('active');
+                editKey = null;
+                showToast('บันทึกการแก้ไขแล้ว', 'success');
+            } catch(e) { err.textContent = 'บันทึกไม่สำเร็จ: ' + e.message; }
+        });
+
         // ================= IMPORT MODAL =================
         document.getElementById('open-import-modal-btn').addEventListener('click', () => {
             document.getElementById('import-modal').classList.add('active');
@@ -1076,18 +1387,31 @@
                 return;
             }
 
-            let successCount = 0;
+            const auto = readAutoBox('imp');
+            const impBtn = document.getElementById('confirm-import-btn');
+            const total = dataToImport.length;
+            impBtn.disabled = true;
+
+            let successCount = 0, done = 0;
             for(let item of dataToImport) {
+                done++;
                 if(!item.text || !item.opt1 || !item.opt2 || !item.opt3 || !item.opt4 || !item.correct) continue;
-                await push(ref(db, 'questions'), {
-                    text: item.text, img: item.img || '',
+                const q = {
+                    text: item.text, img: item.img || '', imgQuery: item.imgQuery || '',
                     opt1: item.opt1, opt2: item.opt2, opt3: item.opt3, opt4: item.opt4,
+                    img1: item.img1 || '', img2: item.img2 || '', img3: item.img3 || '', img4: item.img4 || '',
                     correct: parseInt(item.correct), points: parseInt(item.points) || 1000,
                     timeLimit: parseInt(item.timeLimit) || 20
-                });
+                };
+                if(auto.on) {
+                    impBtn.textContent = `🖼️ กำลังหารูป ${done}/${total}…`;
+                    await autoFillImages(q, auto.want);
+                }
+                await push(ref(db, 'questions'), q);
                 successCount++;
             }
 
+            impBtn.disabled = false; impBtn.textContent = 'นำเข้า';
             document.getElementById('import-modal').classList.remove('active');
             showToast(`นำเข้า ${successCount} คำถามสำเร็จ!`, 'success');
         });
@@ -1286,13 +1610,17 @@
                 if(snapshot.exists()) {
                     snapshot.forEach((child) => {
                         const data = child.val();
+                        const nImg = ['img', 'img1', 'img2', 'img3', 'img4'].filter(k => data[k]).length;
                         qList.innerHTML += `
-                            <div class="list-item">
-                                <div style="flex: 1;">
+                            <div class="list-item" style="gap: 10px;">
+                                <div style="flex: 1; min-width: 0;">
                                     <strong style="color: var(--text-bright);">${data.text}</strong><br>
-                                    <span style="font-size: 12px; color: var(--text-muted);">เฉลย: ข้อ ${data.correct} | ⏱️ ${data.timeLimit}วิ | 💎 ${data.points}pt</span>
+                                    <span style="font-size: 12px; color: var(--text-muted);">เฉลย: ข้อ ${data.correct} | ⏱️ ${data.timeLimit}วิ | 💎 ${data.points}pt${nImg ? ' | 🖼️ ' + nImg : ''}</span>
                                 </div>
-                                <button class="success" style="width: auto; padding: 8px 16px; font-size: 13px;" onclick="pushQuestion('${child.key}')">ส่ง</button>
+                                <div class="list-actions">
+                                    <button class="purple" onclick="editQuestion('${child.key}')" aria-label="แก้ไข" title="แก้ไข">✏️</button>
+                                    <button class="success" onclick="pushQuestion('${child.key}')">ส่ง</button>
+                                </div>
                             </div>`;
                     });
                 } else {
@@ -1356,24 +1684,35 @@
             });
         }
 
-        document.getElementById('add-question-btn').addEventListener('click', () => {
+        document.getElementById('add-question-btn').addEventListener('click', async () => {
             const text = document.getElementById('q-text').value.trim();
             const correct = parseInt(document.getElementById('q-correct').value);
             if(!text || correct === 0) return showToast('กรอกคำถามและเฉลยด้วย!', 'warning');
 
-            push(ref(db, 'questions'), {
-                text, img: document.getElementById('q-img').value.trim(),
+            const btn = document.getElementById('add-question-btn');
+            const q = {
+                text, img: document.getElementById('q-img').value.trim(), imgQuery: '',
                 opt1: document.getElementById('q-opt1').value.trim(),
                 opt2: document.getElementById('q-opt2').value.trim(),
                 opt3: document.getElementById('q-opt3').value.trim(),
                 opt4: document.getElementById('q-opt4').value.trim(),
+                img1: '', img2: '', img3: '', img4: '',
                 correct, points: parseInt(document.getElementById('q-points').value) || 1000,
                 timeLimit: parseInt(document.getElementById('q-time').value) || 20
-            }).then(() => {
+            };
+            btn.disabled = true;
+            try {
+                const auto = readAutoBox('q');
+                if(auto.on) { btn.textContent = '🖼️ กำลังหารูป…'; await autoFillImages(q, auto.want); }
+                await push(ref(db, 'questions'), q);
                 showToast('บันทึกลงคิวสำเร็จ!', 'success');
                 ['q-text','q-img','q-opt1','q-opt2','q-opt3','q-opt4'].forEach(id => document.getElementById(id).value = '');
                 document.getElementById('q-correct').value = '0';
-            });
+            } catch(e) {
+                showToast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false; btn.textContent = 'บันทึกลงคิว';
+            }
         });
 
         window.pushQuestion = async (key) => {
@@ -1739,6 +2078,15 @@
                     else { imgEl.style.display = 'none'; }
                     for(let i=1; i<=4; i++) {
                         document.getElementById(`p-opt-${i}-label`).textContent = data[`opt${i}`];
+                        const optImg = document.getElementById(`p-opt-${i}-img`);
+                        const optImgUrl = data[`img${i}`];
+                        if(optImgUrl) {
+                            if(optImg.getAttribute('src') !== optImgUrl) optImg.src = optImgUrl;
+                            document.getElementById(`p-opt-${i}`).classList.add('has-img');
+                        } else {
+                            optImg.removeAttribute('src');
+                            document.getElementById(`p-opt-${i}`).classList.remove('has-img');
+                        }
                     }
 
                     qArea.dataset.correct = data.correct;
