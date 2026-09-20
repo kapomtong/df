@@ -780,6 +780,8 @@
         let mySelectedOption = null;
         let myEarnedBase = 0;
         let myBonus = 0;
+        let myAnsweredAt = null;
+        let scoreAppliedFor = null;
         let timerInterval = null;
         let isPodiumActive = false;
         let isSummaryActive = false;
@@ -792,6 +794,7 @@
         let autoRevealedFor = null;
         let summaryShownFor = null;
         let summaryHiddenFor = null;
+        let autoAdvancedFor = null;
         let gameStateListenerStarted = false;
         let autoEngineStarted = false;
 
@@ -1258,6 +1261,7 @@
             data.revealedAt = null;
             // เวลาเริ่มจริงถูกกำหนดจาก Admin เพียงครั้งเดียว ทุก client จึงเห็น deadline เดียวกัน
             data.timeLimit = Math.max(1, parseInt(data.timeLimit, 10) || 20);
+            // startedAt คือเวลาที่ช้อยส์ขึ้นและเริ่มจับเวลาจริง ไม่รวมช่วงเตรียมตัว 3 วินาที
             data.startedAt = Date.now() + PREPARE_DURATION_MS;
             data.endTime = data.startedAt + (data.timeLimit * 1000);
 
@@ -1277,6 +1281,27 @@
             await remove(ref(db, 'questions/' + key));
             showToast('ส่งคำถามแล้ว!', 'success');
         };
+
+        // เปิดคำถามแรกในคิวให้อัตโนมัติหลังจบรอบสรุปคะแนน
+        // จำกัดให้ทำจากแท็บ Admin เท่านั้น ป้องกันผู้เล่นหลายเครื่องเขียน state แข่งกัน
+        async function advanceToNextQuestion(completedQuestionId) {
+            if(!isAdmin || autoAdvancedFor === completedQuestionId) return;
+            autoAdvancedFor = completedQuestionId;
+            try {
+                const queueSnap = await get(ref(db, 'questions'));
+                if(!queueSnap.exists()) {
+                    await set(ref(db, 'gameState/current'), { active: false });
+                    showToast('จบรอบนี้แล้ว — ยังไม่มีคำถามถัดไปในคิว', 'normal');
+                    return;
+                }
+                let nextKey = null;
+                queueSnap.forEach(child => { if(!nextKey) nextKey = child.key; });
+                if(nextKey) await window.pushQuestion(nextKey);
+            } catch(err) {
+                console.error('Auto next question failed:', err);
+                showToast('เปิดคำถามถัดไปไม่สำเร็จ กรุณาตรวจสอบคิวคำถาม', 'error');
+            }
+        }
 
         document.getElementById('show-answer-btn').addEventListener('click', () => {
             const now = Date.now();
@@ -1470,7 +1495,11 @@
                    && now >= liveSummaryState.ts + SUMMARY_DURATION_MS
                    && summaryHiddenFor !== liveSummaryState.questionId) {
                     summaryHiddenFor = liveSummaryState.questionId;
-                    update(ref(db, 'gameState/summary'), { active: false }).catch(()=>{});
+                    const completedQuestionId = liveSummaryState.questionId;
+                    // ปิดสรุปก่อน แล้วค่อยเปิดข้อถัดไป เพื่อให้ทุก client เปลี่ยนหน้าตามลำดับ
+                    set(ref(db, 'gameState/summary'), { active: false, completedAt: now })
+                        .then(() => advanceToNextQuestion(completedQuestionId))
+                        .catch(()=>{});
                 }
             }, 500);
 
@@ -1493,6 +1522,8 @@
                         mySelectedOption = null;
                         myEarnedBase = 0;
                         myBonus = 0;
+                        myAnsweredAt = null;
+                        scoreAppliedFor = null;
                         activeQuestionId = data.questionId;
                         document.getElementById('answer-result-text').style.display = 'none';
                         document.querySelectorAll('.option-btn').forEach(btn => {
@@ -1608,6 +1639,39 @@
                         }
                         lockButtons();
                         const correctNum = parseInt(data.correct);
+                        // รองรับกรณีรีเฟรชหน้าระหว่างรอบ โดยอ่านคำตอบจาก Firebase
+                        if(mySelectedOption == null && data.answers && data.answers[currentUser] != null) {
+                            mySelectedOption = parseInt(data.answers[currentUser]);
+                        }
+                        // คำนวณและบันทึกคะแนนหลังเฉลยเท่านั้น ไม่ให้คะแนนเด้งก่อนบอกผล
+                        if(scoreAppliedFor !== data.questionId) {
+                            scoreAppliedFor = data.questionId;
+                            const answerAt = Number((data.answerTimes || {})[currentUser]) || myAnsweredAt;
+                            if(mySelectedOption === correctNum && answerAt) {
+                                const totalTimeMs = Math.max(1, Number(data.timeLimit) || 20) * 1000;
+                                const answerStart = Number(data.startedAt) || (Number(data.endTime) - totalTimeMs);
+                                const elapsedMs = Math.max(0, Math.min(totalTimeMs, answerAt - answerStart));
+                                const speedFactor = 1 - ((elapsedMs / totalTimeMs) * (1 - SPEED_MIN_FACTOR));
+                                const earnedBase = Math.max(1, Math.round((data.points || 1000) * speedFactor));
+                                const newStreak = currentStreak + 1;
+                                const bonusPercent = newStreak >= 2 ? Math.min(COMBO_BASE_BONUS + (newStreak - 2) * COMBO_STEP_BONUS, COMBO_MAX_BONUS) : 0;
+                                const bonus = Math.round(earnedBase * bonusPercent);
+                                myEarnedBase = earnedBase;
+                                myBonus = bonus;
+                                update(ref(db, 'players/' + currentUser), {
+                                    score: currentScore + earnedBase + bonus,
+                                    streak: newStreak,
+                                    lastRoundPoints: earnedBase + bonus,
+                                    lastRoundCorrect: true
+                                });
+                                showFloatingPoints(earnedBase, bonus);
+                                miniConfetti();
+                            } else {
+                                myEarnedBase = 0;
+                                myBonus = 0;
+                                update(ref(db, 'players/' + currentUser), { streak: 0, lastRoundPoints: 0, lastRoundCorrect: false });
+                            }
+                        }
                         const resultText = document.getElementById('answer-result-text');
                         resultText.style.display = 'block';
 
@@ -1690,7 +1754,7 @@
                         document.getElementById('answer-result-text').innerHTML = "หมดเวลา! ⏳<br><span style='font-size:14px;color:var(--text-muted)'>คอมโบถูกรีเซ็ต</span>";
                         document.getElementById('answer-result-text').style.color = "var(--danger)";
                         document.getElementById('answer-result-text').style.display = "block";
-                        update(ref(db, 'players/' + currentUser), { streak: 0, lastRoundPoints: 0, lastRoundCorrect: false });
+                        // ยังไม่เขียนผลลงผู้เล่นจนกว่า Admin/auto-engine จะเปิดเฉลย
                     }
                 }
             }, 200);
@@ -1708,6 +1772,7 @@
             if(preparePhaseActive) return;
             hasAnsweredCurrent = true;
             mySelectedOption = selectedNumber;
+            myAnsweredAt = Date.now();
 
             lockButtons();
             document.getElementById(`p-opt-${selectedNumber}`).classList.add('selected');
@@ -1715,7 +1780,10 @@
                 if(idx + 1 !== selectedNumber) btn.style.opacity = "0.55";
             });
 
-            update(ref(db, `gameState/current/answers`), { [currentUser]: selectedNumber });
+            update(ref(db, 'gameState/current'), {
+                [`answers/${currentUser}`]: selectedNumber,
+                [`answerTimes/${currentUser}`]: myAnsweredAt
+            });
 
             const qArea = document.getElementById('question-area');
             const correctNum = parseInt(qArea.dataset.correct);
@@ -1736,17 +1804,8 @@
                 myEarnedBase = earnedBase;
                 myBonus = bonus;
 
-                update(ref(db, 'players/' + currentUser), {
-                    score: currentScore + totalEarned,
-                    streak: newStreak,
-                    lastRoundPoints: totalEarned,
-                    lastRoundCorrect: true
-                });
-                showFloatingPoints(earnedBase, bonus);
-                miniConfetti();
                 showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'success');
             } else {
-                update(ref(db, 'players/' + currentUser), { streak: 0, lastRoundPoints: 0, lastRoundCorrect: false });
                 showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'normal');
             }
         };
