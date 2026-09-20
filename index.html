@@ -6,6 +6,8 @@
     <title>Quiz Realtime - เกมตอบคำถาม</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap');
+
         /* ================= VIBRANT GAME-SHOW THEME ================= */
         :root {
             --bg-dark: #0A0714;
@@ -32,7 +34,7 @@
         html, body { height: 100%; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Noto Sans Thai', 'Kanit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(160deg, var(--bg-dark) 0%, var(--bg-dark2) 45%, #1a0f30 100%);
             color: var(--text-bright);
             min-height: 100vh;
@@ -178,22 +180,6 @@
         button.purple { background: linear-gradient(135deg, var(--purple) 0%, #7c1fd8 100%); color: white; }
         button.purple:hover { box-shadow: 0 10px 26px rgba(177, 78, 255, 0.4); }
         button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
-
-        /* ============ AUTH (LOGIN/REGISTER) ============ */
-        .auth-tabs { display: flex; gap: 8px; margin-bottom: 18px; background: var(--bg-elevated); border-radius: 14px; padding: 6px; }
-        .auth-tab { flex: 1; padding: 12px; border: none; border-radius: 10px; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.25s; }
-        .auth-tab.active { background: linear-gradient(135deg, var(--accent-cool) 0%, #0891b2 100%); color: #04141a; box-shadow: 0 4px 14px rgba(0, 229, 255, 0.35); }
-        .auth-hint { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 14px; }
-        .auth-hint a { color: var(--accent-cool); cursor: pointer; font-weight: 700; text-decoration: none; }
-        .auth-hint a:hover { text-decoration: underline; }
-        .auth-error { color: var(--danger); font-size: 13px; text-align: center; margin: -6px 0 12px; min-height: 18px; font-weight: 600; }
-        .welcome-back-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(57, 255, 136, 0.12); border: 1px solid rgba(57, 255, 136, 0.35);
-            color: var(--success); font-weight: 700; font-size: 14px;
-            padding: 8px 18px; border-radius: 30px; margin-bottom: 16px;
-            animation: scaleIn 0.4s cubic-bezier(0.16,1,0.3,1);
-        }
 
         /* TOAST */
         #custom-toast {
@@ -544,38 +530,16 @@
 
     <div class="app-container">
 
-        <!-- AUTH SCREEN (LOGIN / REGISTER) -->
+        <!-- LOGIN SCREEN -->
         <div id="login-screen" class="screen active">
-            <div style="text-align: center; margin-bottom: 26px;">
+            <div style="text-align: center; margin-bottom: 30px;">
                 <div style="font-size: 64px; margin-bottom: 16px;">🚀</div>
                 <h1 style="font-size: 32px;">Quiz Realtime</h1>
                 <p style="color: var(--text-muted); margin-top: 8px;">เกมตอบคำถามแบบเรียลไทม์ ยิ่งเร็วยิ่งได้เยอะ!</p>
             </div>
 
-            <div class="auth-tabs">
-                <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">🔑 เข้าสู่ระบบ</button>
-                <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">✨ สมัครสมาชิก</button>
-            </div>
-
-            <!-- LOGIN FORM -->
-            <div id="auth-login-form">
-                <input type="text" id="login-name" placeholder="ชื่อผู้ใช้" autocomplete="username">
-                <input type="password" id="login-pass" placeholder="รหัสผ่าน" autocomplete="current-password">
-                <p class="auth-error" id="login-error"></p>
-                <button id="login-btn">🎮 เข้าสู่ระบบ / เข้าร่วมเกม</button>
-                <p class="auth-hint">ยังไม่มีบัญชี? <a onclick="switchAuthTab('register')">สมัครสมาชิกเลย</a></p>
-            </div>
-
-            <!-- REGISTER FORM -->
-            <div id="auth-register-form" style="display:none;">
-                <input type="text" id="reg-name" placeholder="ตั้งชื่อผู้ใช้ (ใช้เข้าเกม)" autocomplete="off">
-                <input type="password" id="reg-pass" placeholder="ตั้งรหัสผ่าน" autocomplete="new-password">
-                <input type="password" id="reg-pass2" placeholder="ยืนยันรหัสผ่าน" autocomplete="new-password">
-                <p class="auth-error" id="reg-error"></p>
-                <button id="register-btn" class="success">✨ สมัครสมาชิก</button>
-                <p class="auth-hint">มีบัญชีอยู่แล้ว? <a onclick="switchAuthTab('login')">เข้าสู่ระบบ</a></p>
-            </div>
-
+            <input type="text" id="username-input" placeholder="พิมพ์ชื่อของคุณที่นี่..." autocomplete="off">
+            <button id="join-btn">🎮 เข้าร่วมเกม</button>
             <button id="goto-admin-btn" class="purple" style="display: none; margin-top: 15px;">
                 🛠️ เข้าสู่ระบบจัดการ (Admin)
             </button>
@@ -755,34 +719,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // ================= AUTO-LOGIN (กันรีเฟรชแล้วหลุดจากเกม) =================
-        // ถ้าเคย login ไว้ → ข้ามหน้า auth เข้าเกมเลย ไม่ต้องกรอกใหม่ ไม่มี animation ขัดจังหวะ
-        (async function autoLogin() {
-            const sess = loadSession();
-            if(!sess || !sess.name || !sess.pass) return;
-            try {
-                const snap = await get(ref(db, 'members/' + sess.name));
-                if(snap.exists() && snap.val().password === sess.pass) {
-                    currentUser = sess.name;
-                    try { localStorage.setItem('quiz_username', currentUser); } catch(e){}
-                    set(ref(db, 'players/' + currentUser), { name: currentUser, score: 0, streak: 0, lastRoundPoints: 0, lastRoundCorrect: null, lastActive: Date.now() })
-                    .then(() => {
-                        document.getElementById('display-player-name').textContent = currentUser;
-                        switchScreen('player-screen');
-                        listenToGameState();
-                        monitorKick();
-                        // ปลดล็อกเสียงเงียบๆ
-                        let audioUnlock = document.getElementById('snd-tick');
-                        audioUnlock.volume = 0;
-                        audioUnlock.play().then(() => audioUnlock.volume = 1).catch(e => {});
-                    })
-                    .catch(() => { clearSession(); });
-                } else {
-                    clearSession();
-                }
-            } catch(e) { clearSession(); }
-        })();
-
         // ================= SCORING TUNING =================
         // ตอบเร็ว = ได้เต็ม, ตอบช้าสุด (พอดีหมดเวลา) = เหลือ 50% ของคะแนนเต็ม
         const SPEED_MIN_FACTOR = 0.5;
@@ -791,7 +727,7 @@
         const COMBO_STEP_BONUS = 0.025;
         const COMBO_MAX_BONUS = 0.20;
         // ระยะเวลาแสดงเฉลยก่อนเปิดกระดานสรุป / ระยะเวลาที่กระดานสรุปค้างอยู่
-        const REVEAL_TO_SUMMARY_MS = 4000;
+        const REVEAL_TO_SUMMARY_MS = 1500;
         const SUMMARY_DURATION_MS = 6000;
         // เวลาแสดงโจทย์ล้วนๆ ก่อนช้อยส์จะขึ้น (มิลลิวินาที)
         const PREPARE_DURATION_MS = 3000;
@@ -818,6 +754,8 @@
         let autoRevealedFor = null;
         let summaryShownFor = null;
         let summaryHiddenFor = null;
+        let gameStateListenerStarted = false;
+        let autoEngineStarted = false;
 
         // ================= UI HELPERS =================
         const showToast = (msg, type = 'normal') => {
@@ -984,96 +922,33 @@
             showToast(`นำเข้า ${successCount} คำถามสำเร็จ!`, 'success');
         });
 
-        // ================= AUTH: LOGIN / REGISTER =================
-        const ADMIN_NAME = '3007x';
-
-        // ---- session ถาวร: จำไว้ว่า login ด้วยบัญชีไหน (กันรีเฟรชแล้วหลุด) ----
-        function saveSession(name, pass) {
-            try { localStorage.setItem('quiz_session', JSON.stringify({ name, pass })); } catch(e){}
-        }
-        function loadSession() {
-            try { return JSON.parse(localStorage.getItem('quiz_session') || 'null'); } catch(e){ return null; }
-        }
-        function clearSession() {
-            try { localStorage.removeItem('quiz_session'); } catch(e){}
-            try { localStorage.removeItem('quiz_username'); } catch(e){}
+        // ================= LOGIN =================
+        const usernameInput = document.getElementById('username-input');
+        if(currentUser) {
+            usernameInput.value = currentUser;
+            checkAdminName(currentUser);
+            if(!isAdmin) monitorKick();
         }
 
-        window.switchAuthTab = (tab) => {
-            const isLogin = tab === 'login';
-            document.getElementById('tab-login').classList.toggle('active', isLogin);
-            document.getElementById('tab-register').classList.toggle('active', !isLogin);
-            document.getElementById('auth-login-form').style.display = isLogin ? 'block' : 'none';
-            document.getElementById('auth-register-form').style.display = isLogin ? 'none' : 'block';
-            document.getElementById('login-error').textContent = '';
-            document.getElementById('reg-error').textContent = '';
-        };
+        usernameInput.addEventListener('input', (e) => checkAdminName(e.target.value));
 
         function checkAdminName(name) {
-            if(name.trim() === ADMIN_NAME) {
+            if(name.trim() === '3007x') {
                 document.getElementById('goto-admin-btn').style.display = 'block';
-                document.getElementById('auth-login-form').style.display = 'none';
-                document.getElementById('auth-register-form').style.display = 'none';
-                document.querySelector('.auth-tabs').style.display = 'none';
+                document.getElementById('join-btn').style.display = 'none';
             } else {
                 document.getElementById('goto-admin-btn').style.display = 'none';
-                const activeTab = document.getElementById('tab-login').classList.contains('active') ? 'login' : 'register';
-                document.getElementById('auth-login-form').style.display = activeTab === 'login' ? 'block' : 'none';
-                document.getElementById('auth-register-form').style.display = activeTab === 'register' ? 'block' : 'none';
-                document.querySelector('.auth-tabs').style.display = 'flex';
+                document.getElementById('join-btn').style.display = 'block';
             }
         }
 
-        // ---- LOGIN ----
-        async function doLogin() {
-            const name = document.getElementById('login-name').value.trim();
-            const pass = document.getElementById('login-pass').value;
-            const errEl = document.getElementById('login-error');
-            errEl.textContent = '';
+        function doJoin() {
+            const name = usernameInput.value.trim();
+            if(!name) return showToast('กรุณาใส่ชื่อก่อนเข้าเล่น!', 'warning');
+            if(document.getElementById('join-btn').style.display === 'none') return;
 
-            if(!name || !pass) { errEl.textContent = 'กรุณากรอกชื่อและรหัสผ่าน'; return; }
-            if(name === ADMIN_NAME) { errEl.textContent = 'บัญชีนี้สงวนสำหรับแอดมิน'; return; }
-
-            // ตรวจสอบบัญชีใน Firebase (members/{name})
-            const snap = await get(ref(db, 'members/' + name));
-            if(!snap.exists()) { errEl.textContent = 'ไม่พบบัญชีนี้ กรุณาสมัครสมาชิกก่อน'; return; }
-            if(snap.val().password !== pass) { errEl.textContent = 'รหัสผ่านไม่ถูกต้อง'; return; }
-
-            enterGame(name, pass);
-        }
-
-        // ---- REGISTER ----
-        async function doRegister() {
-            const name = document.getElementById('reg-name').value.trim();
-            const pass = document.getElementById('reg-pass').value;
-            const pass2 = document.getElementById('reg-pass2').value;
-            const errEl = document.getElementById('reg-error');
-            errEl.textContent = '';
-
-            if(!name || !pass) { errEl.textContent = 'กรุณากรอกชื่อและรหัสผ่าน'; return; }
-            if(name.length < 2) { errEl.textContent = 'ชื่อต้องยาวอย่างน้อย 2 ตัวอักษร'; return; }
-            if(pass.length < 4) { errEl.textContent = 'รหัสผ่านต้องยาวอย่างน้อย 4 ตัวอักษร'; return; }
-            if(pass !== pass2) { errEl.textContent = 'รหัสผ่านยืนยันไม่ตรงกัน'; return; }
-            if(name === ADMIN_NAME) { errEl.textContent = 'ไม่สามารถใช้ชื่อนี้ได้'; return; }
-
-            // เช็กว่าชื่อซ้ำไหม
-            const snap = await get(ref(db, 'members/' + name));
-            if(snap.exists()) { errEl.textContent = 'ชื่อนี้ถูกใช้ไปแล้ว ลองชื่ออื่น'; return; }
-
-            await set(ref(db, 'members/' + name), { name, password: pass, createdAt: Date.now() });
-            showToast('สมัครสมาชิกสำเร็จ! เข้าสู่ระบบเลย', 'success');
-
-            // กลับไปหน้า login พร้อมกรอกชื่อไว้ให้แล้ว
-            switchAuthTab('login');
-            document.getElementById('login-name').value = name;
-            document.getElementById('login-pass').focus();
-        }
-
-        // ---- เข้าเกม (ใช้ร่วมกับ login + auto-relogin ตอนรีเฟรช) ----
-        function enterGame(name, pass) {
             currentUser = name;
-            saveSession(name, pass);
-            try { localStorage.setItem('quiz_username', currentUser); } catch(e){}
+            localStorage.setItem('quiz_username', currentUser);
 
             set(ref(db, 'players/' + currentUser), { name: currentUser, score: 0, streak: 0, lastRoundPoints: 0, lastRoundCorrect: null, lastActive: Date.now() })
             .then(() => {
@@ -1092,21 +967,16 @@
             });
         }
 
-        document.getElementById('login-btn').addEventListener('click', doLogin);
-        document.getElementById('register-btn').addEventListener('click', doRegister);
-        document.getElementById('login-name').addEventListener('input', (e) => checkAdminName(e.target.value));
-        document.getElementById('login-pass').addEventListener('keydown', (e) => { if(e.key === 'Enter') doLogin(); });
-        document.getElementById('login-name').addEventListener('keydown', (e) => { if(e.key === 'Enter') document.getElementById('login-pass').focus(); });
-        document.getElementById('reg-pass2').addEventListener('keydown', (e) => { if(e.key === 'Enter') doRegister(); });
+        document.getElementById('join-btn').addEventListener('click', doJoin);
+        usernameInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') doJoin(); });
 
         function monitorKick() {
             onValue(ref(db, 'players/' + currentUser), (snapshot) => {
                 if(!snapshot.exists() && currentUser && !isAdmin) {
                     currentUser = '';
-                    clearSession();
+                    localStorage.removeItem('quiz_username');
                     switchScreen('login-screen');
-                    document.getElementById('login-name').value = '';
-                    document.getElementById('login-pass').value = '';
+                    usernameInput.value = '';
                     showToast('คุณถูกเตะออกจากห้อง!', 'error');
                 } else if(snapshot.exists()) {
                     const newScore = snapshot.val().score || 0;
@@ -1152,10 +1022,8 @@
         window.logoutAdmin = () => {
             isAdmin = false;
             switchScreen('login-screen');
-            clearSession();
-            document.getElementById('login-name').value = '';
-            document.getElementById('login-pass').value = '';
-            switchAuthTab('login');
+            usernameInput.value = '';
+            localStorage.removeItem('quiz_username');
             checkAdminName('');
         };
 
@@ -1267,7 +1135,10 @@
             data.questionId = key;
             data.showAnswer = false;
             data.revealedAt = null;
-            data.endTime = Date.now() + (data.timeLimit * 1000);
+            // เวลาเริ่มจริงถูกกำหนดจาก Admin เพียงครั้งเดียว ทุก client จึงเห็น deadline เดียวกัน
+            data.timeLimit = Math.max(1, parseInt(data.timeLimit, 10) || 20);
+            data.startedAt = Date.now() + PREPARE_DURATION_MS;
+            data.endTime = data.startedAt + (data.timeLimit * 1000);
 
             // รีเซ็ตคะแนนของรอบก่อนหน้า เพื่อให้กระดานสรุปคะแนนของรอบใหม่ถูกต้อง
             const playersSnap = await get(ref(db, 'players'));
@@ -1287,13 +1158,15 @@
         };
 
         document.getElementById('show-answer-btn').addEventListener('click', () => {
-            update(ref(db, 'gameState/current'), { showAnswer: true, revealedAt: Date.now() });
+            const now = Date.now();
+            update(ref(db, 'gameState/current'), { showAnswer: true, revealedAt: now, summaryAt: now + REVEAL_TO_SUMMARY_MS });
             showToast('แสดงเฉลยแล้ว', 'success');
         });
 
         document.getElementById('clear-current-q-btn').addEventListener('click', () => {
-            set(ref(db, 'gameState/current'), { active: false });
-            update(ref(db, 'gameState'), { summary: { active: false } });
+            // ใช้ timestamp ยืนยันว่าเป็นการซ่อนโดย Admin และกัน auto-engine เขียนกลับ
+            set(ref(db, 'gameState/current'), { active: false, hiddenAt: Date.now() });
+            set(ref(db, 'gameState/summary'), { active: false, hiddenAt: Date.now() });
         });
 
         document.getElementById('trigger-podium-btn').addEventListener('click', () => {
@@ -1381,11 +1254,13 @@
 
         // ================= GAME STATE =================
         function listenToGameState() {
+            if(gameStateListenerStarted) return;
+            gameStateListenerStarted = true;
+
             onValue(ref(db, 'gameState/podium'), async (snapshot) => {
                 if(snapshot.exists() && snapshot.val() === true) {
                     isPodiumActive = true;
-                    // แอดมินอยู่หน้าควบคุมต่อ ไม่ดีดไปหน้า podium (กดดูได้จากปุ่มสรุปผลถ้าต้องการ)
-                    if(!isAdmin) switchScreen('podium-screen');
+                    switchScreen('podium-screen');
                     playSound('snd-win');
 
                     const pSnap = await get(ref(db, 'players'));
@@ -1439,35 +1314,31 @@
                 if(val && val.active) {
                     if(isPodiumActive) return;
                     isSummaryActive = true;
-                    if(isAdmin) {
-                        // แอดมิน: แค่โชว์แถบแจ้งเตือนบนหน้าควบคุม ไม่สลับหน้า กดส่งข้อต่อไปได้ทันที
-                        showToast('📊 กำลังแสดงกระดานสรุปคะแนนให้ผู้เล่น...', 'normal');
-                    } else {
-                        renderSummaryScreen();
-                        switchScreen('summary-screen');
-                        playSound('snd-win');
-                    }
+                    renderSummaryScreen();
+                    switchScreen('summary-screen');
+                    playSound('snd-win');
                 } else if(isSummaryActive) {
                     isSummaryActive = false;
-                    if(!isPodiumActive && !isAdmin) switchScreen('player-screen');
+                    if(!isPodiumActive) switchScreen(isAdmin ? 'admin-screen' : 'player-screen');
                 }
             });
 
             // ---- Auto-engine: เฉลยอัตโนมัติเมื่อหมดเวลา + เปิด/ปิดกระดานสรุปเอง ----
-            // ⚠️ ทำงานเฉพาะแท็บแอดมินเท่านั้น (isAdmin) กันแท็บผู้เล่นแย่งเขียน state จนหน้าจอแอดมินกระโดด
+            // ทำงานอยู่ในทุกแท็บที่เปิดหน้านี้ค้างไว้ (ทั้งแอดมินและผู้เล่น) เพื่อความชัวร์
+            if(autoEngineStarted) return;
+            autoEngineStarted = true;
             setInterval(() => {
-                if(!isAdmin) return;
                 if(!liveCurrentState || !liveCurrentState.active) return;
                 const now = Date.now();
 
                 if(!liveCurrentState.showAnswer && liveCurrentState.endTime && now >= liveCurrentState.endTime
                    && autoRevealedFor !== liveCurrentState.questionId) {
                     autoRevealedFor = liveCurrentState.questionId;
-                    update(ref(db, 'gameState/current'), { showAnswer: true, revealedAt: now }).catch(()=>{});
+                    update(ref(db, 'gameState/current'), { showAnswer: true, revealedAt: now, summaryAt: now + REVEAL_TO_SUMMARY_MS }).catch(()=>{});
                 }
 
                 if(liveCurrentState.showAnswer && liveCurrentState.revealedAt
-                   && now >= liveCurrentState.revealedAt + REVEAL_TO_SUMMARY_MS
+                   && now >= (liveCurrentState.summaryAt || (liveCurrentState.revealedAt + REVEAL_TO_SUMMARY_MS))
                    && (!liveSummaryState || !liveSummaryState.active)
                    && summaryShownFor !== liveCurrentState.questionId) {
                     summaryShownFor = liveCurrentState.questionId;
@@ -1485,14 +1356,16 @@
             // ---- หน้าจอผู้เล่น: แสดงคำถาม/ตัวเลือก/ตัวจับเวลา ----
             onValue(ref(db, 'gameState/current'), (snapshot) => {
                 if(isPodiumActive || isAdmin || isSummaryActive) return;
-                // กันเผื่อแอดมินถูกดีดมาหน้านี้: ถ้าไม่ใช่หน้าผู้เล่นที่ active จริง ให้ข้าม
-                if(!document.getElementById('player-screen').classList.contains('active')) return;
 
                 const waitArea = document.getElementById('waiting-area');
                 const qArea = document.getElementById('question-area');
 
                 if(snapshot.exists() && snapshot.val().active) {
                     const data = snapshot.val();
+                    // รองรับคำถามที่สร้างด้วยเวอร์ชันเก่า และป้องกัน timer ได้ค่า NaN
+                    data.timeLimit = Math.max(1, parseInt(data.timeLimit, 10) || 20);
+                    if(!Number(data.startedAt)) data.startedAt = Date.now() + PREPARE_DURATION_MS;
+                    if(!Number(data.endTime)) data.endTime = data.startedAt + (data.timeLimit * 1000);
 
                     if(activeQuestionId !== data.questionId) {
                         hasAnsweredCurrent = false;
@@ -1539,7 +1412,8 @@
                         const imgElPre = document.getElementById('player-question-img');
                         if(imgElPre.style.display !== 'none') imgElPre.classList.add('anim-img-in');
 
-                        const questionStartAt = Date.now() + PREPARE_DURATION_MS;
+                        // ใช้เวลาที่อยู่ใน Firebase เป็นหลัก ห้ามเริ่มนับใหม่ตามเวลาที่ listener ทำงาน
+                        const questionStartAt = Number(data.startedAt) || (Date.now() + PREPARE_DURATION_MS);
                         let prepRemaining = Math.ceil(PREPARE_DURATION_MS / 1000);
                         prepCountdown.textContent = prepRemaining;
 
@@ -1665,11 +1539,12 @@
             const circumference = 2 * Math.PI * 50;
             timerWrap.classList.remove('danger');
 
-            const totalTimeMs = (data.timeLimit || 20) * 1000;
+            const totalTimeMs = Math.max(1, Number(data.timeLimit) || 20) * 1000;
             const basePoints = data.points || 1000;
+            const endTime = Number(data.endTime) || (Date.now() + totalTimeMs);
 
             timerInterval = setInterval(() => {
-                const remainingMs = Math.max(0, data.endTime - Date.now());
+                const remainingMs = Math.max(0, endTime - Date.now());
                 const timeLeft = Math.ceil(remainingMs / 1000);
                 timerDisplay.textContent = timeLeft;
 
