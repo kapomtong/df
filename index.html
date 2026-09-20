@@ -3,7 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตอบคำถาม</title>
+    <title>Quiz Realtime - เกมตอบคำถาม</title>
+    <script>
+    /* ===== Theme engine (mode + accent colour) ===== */
+    window.QuizTheme = (function(){
+        var PRESETS = {
+            neon:   { name:'นีออน',   c:'#00E5FF', c2:'#0891b2', warm:'#FF2E9A', purple:'#B14EFF' },
+            rose:   { name:'ชมพู',    c:'#FF5FA8', c2:'#BE185D', warm:'#FFA630', purple:'#A855F7' },
+            sunset: { name:'ส้ม',     c:'#FF8A3D', c2:'#C2560A', warm:'#FF2E9A', purple:'#D946EF' },
+            forest: { name:'เขียว',   c:'#2DD4A0', c2:'#0F8F6C', warm:'#FFD60A', purple:'#16A34A' },
+            ocean:  { name:'น้ำเงิน', c:'#4D9BFF', c2:'#1D4ED8', warm:'#00E5FF', purple:'#6366F1' },
+            grape:  { name:'ม่วง',    c:'#B14EFF', c2:'#7c1fd8', warm:'#FF2E9A', purple:'#6D28D9' }
+        };
+        function hexToRgb(h){ h=h.replace('#',''); var n=parseInt(h,16); return [n>>16&255, n>>8&255, n&255]; }
+        function toHex(rgb){ return '#'+rgb.map(function(v){ return ('0'+Math.max(0,Math.min(255,Math.round(v))).toString(16)).slice(-2); }).join(''); }
+        function lum(rgb){ return (0.299*rgb[0]+0.587*rgb[1]+0.114*rgb[2])/255; }
+        function store(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+        function load(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+
+        function applyMode(m){
+            if(m!=='light') m='dark';
+            document.documentElement.setAttribute('data-mode', m);
+            store('quiz_mode', m);
+            return m;
+        }
+        function applyAccent(key){
+            var st=document.documentElement.style, hex, c2, warm=null, purple=null;
+            if(PRESETS[key]){ var p=PRESETS[key]; hex=p.c; c2=p.c2; warm=p.warm; purple=p.purple; }
+            else if(/^custom:#[0-9a-fA-F]{6}$/.test(key||'')){ hex=key.slice(7); c2=toHex(hexToRgb(hex).map(function(v){return v*0.7;})); }
+            else { key='neon'; var d=PRESETS.neon; hex=d.c; c2=d.c2; warm=d.warm; purple=d.purple; }
+            var rgb=hexToRgb(hex);
+            st.setProperty('--accent-cool', hex);
+            st.setProperty('--accent-2', c2);
+            st.setProperty('--accent-rgb', rgb.join(', '));
+            st.setProperty('--on-accent', lum(rgb)>0.55 ? '#04141a' : '#ffffff');
+            if(warm) st.setProperty('--accent-warm', warm); else st.removeProperty('--accent-warm');
+            if(purple) st.setProperty('--purple', purple); else st.removeProperty('--purple');
+            store('quiz_accent', key);
+            return key;
+        }
+        var api = { PRESETS:PRESETS, applyMode:applyMode, applyAccent:applyAccent,
+            getMode:function(){ return document.documentElement.getAttribute('data-mode')||'dark'; },
+            getAccent:function(){ return load('quiz_accent')||'neon'; } };
+        applyMode(load('quiz_mode')); applyAccent(load('quiz_accent'));
+        return api;
+    })();
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap');
@@ -23,6 +69,7 @@
             --danger: #FF3B5C;
             --warning: #FFA630;
             --purple: #B14EFF;
+            --accent-2: #0891b2; --accent-rgb: 0, 229, 255; --on-accent: #04141a;
             --opt-a: #FF3B5C; --opt-a2: #C81846;
             --opt-b: #3B82F6; --opt-b2: #1E3A8A;
             --opt-c: #FFD60A; --opt-c2: #D4A800;
@@ -81,8 +128,8 @@
         }
 
         @keyframes glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(0, 229, 255, 0.35); }
-            50% { box-shadow: 0 0 45px rgba(0, 229, 255, 0.7); }
+            0%, 100% { box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.35); }
+            50% { box-shadow: 0 0 45px rgba(var(--accent-rgb), 0.7); }
         }
 
         @keyframes screenShake {
@@ -97,7 +144,7 @@
         .app-container {
             width: 100%;
             max-width: 900px;
-            padding: 16px;
+            padding: 64px 16px 16px;
             position: relative;
             z-index: 1;
         }
@@ -139,7 +186,7 @@
         }
         input:focus, select:focus, textarea:focus {
             border-color: var(--accent-cool);
-            box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.18);
+            box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.18);
             background: var(--bg-card);
         }
         input::placeholder, textarea::placeholder { color: var(--text-muted); }
@@ -147,8 +194,8 @@
         button {
             width: 100%;
             padding: 15px 20px;
-            background: linear-gradient(135deg, var(--accent-cool) 0%, #0891b2 100%);
-            color: #04141a;
+            background: linear-gradient(135deg, var(--accent-cool) 0%, var(--accent-2) 100%);
+            color: var(--on-accent);
             border: none;
             border-radius: 14px;
             font-size: 15px;
@@ -169,7 +216,7 @@
             transition: width 0.6s, height 0.6s;
         }
         button:active::before { width: 320px; height: 320px; }
-        button:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 10px 26px rgba(0, 229, 255, 0.4); }
+        button:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 10px 26px rgba(var(--accent-rgb), 0.4); }
         button:active { transform: translateY(0) scale(0.98); }
         button.danger { background: linear-gradient(135deg, var(--danger) 0%, #b91c3c 100%); color: white; }
         button.danger:hover { box-shadow: 0 10px 26px rgba(255, 59, 92, 0.4); }
@@ -184,7 +231,7 @@
         /* ============ AUTH (LOGIN/REGISTER) ============ */
         .auth-tabs { display: flex; gap: 8px; margin-bottom: 18px; background: var(--bg-elevated); border-radius: 14px; padding: 6px; }
         .auth-tab { flex: 1; padding: 12px; border: none; border-radius: 10px; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.25s; }
-        .auth-tab.active { background: linear-gradient(135deg, var(--accent-cool) 0%, #0891b2 100%); color: #04141a; box-shadow: 0 4px 14px rgba(0, 229, 255, 0.35); }
+        .auth-tab.active { background: linear-gradient(135deg, var(--accent-cool) 0%, var(--accent-2) 100%); color: var(--on-accent); box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.35); }
         .auth-hint { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 14px; }
         .auth-hint a { color: var(--accent-cool); cursor: pointer; font-weight: 700; text-decoration: none; }
         .auth-hint a:hover { text-decoration: underline; }
@@ -284,7 +331,7 @@
 
         .prepare-banner {
             text-align: center; padding: 28px 16px; margin-bottom: 15px;
-            background: rgba(0, 229, 255, 0.08); border: 2px dashed rgba(0, 229, 255, 0.35);
+            background: rgba(var(--accent-rgb), 0.08); border: 2px dashed rgba(var(--accent-rgb), 0.35);
             border-radius: 16px; font-size: 20px; font-weight: 800; color: var(--accent-cool);
             animation: pulse 1s infinite;
         }
@@ -394,13 +441,13 @@
         /* TABS */
         .tab-container { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.05); padding-bottom: 8px; }
         .tab-btn { flex: 1; padding: 10px; background: transparent; border: none; border-radius: 8px 8px 0 0; color: var(--text-muted); cursor: pointer; transition: all 0.2s; font-weight: 600; font-size: 14px; }
-        .tab-btn.active { background: var(--accent-cool); color: #04141a; }
+        .tab-btn.active { background: var(--accent-cool); color: var(--on-accent); }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: slideUp 0.3s; }
 
         /* FILE UPLOAD */
-        .file-upload-area { border: 2px dashed rgba(0, 229, 255, 0.3); border-radius: 12px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(0, 229, 255, 0.05); }
-        .file-upload-area:hover { border-color: var(--accent-cool); background: rgba(0, 229, 255, 0.1); }
+        .file-upload-area { border: 2px dashed rgba(var(--accent-rgb), 0.3); border-radius: 12px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(var(--accent-rgb), 0.05); }
+        .file-upload-area:hover { border-color: var(--accent-cool); background: rgba(var(--accent-rgb), 0.1); }
         .file-upload-area.dragover { border-color: var(--accent-warm); background: rgba(255, 46, 154, 0.1); }
 
         .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
@@ -415,6 +462,70 @@
             .podium-container { height: 220px; }
             .option-btn { min-height: 64px; font-size: 14px; padding: 14px 10px; }
         }
+
+        /* ============ TOP TOOLBAR (mode / colour / password / logout) ============ */
+        #top-toolbar { position: fixed; top: 10px; right: 12px; z-index: 400; display: flex; gap: 8px; align-items: center; }
+        .tb-btn {
+            width: 42px; height: 42px; padding: 0; border-radius: 50%; font-size: 19px; line-height: 1;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--bg-card); color: var(--text-bright);
+            border: 1px solid rgba(128, 128, 160, 0.35); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+        }
+        .tb-btn:hover { border-color: var(--accent-cool); box-shadow: 0 6px 18px rgba(var(--accent-rgb), 0.35); }
+        .tb-btn.tb-logout {
+            width: auto; border-radius: 21px; padding: 0 16px; font-size: 14px; font-weight: 800; gap: 6px;
+            background: linear-gradient(135deg, var(--danger) 0%, #b91c3c 100%); color: #fff; border-color: transparent;
+        }
+        .tb-wrap { position: relative; }
+        #color-panel {
+            display: none; position: absolute; top: 52px; right: 0; width: 232px; padding: 14px;
+            background: var(--bg-card); border: 1px solid rgba(128, 128, 160, 0.3); border-radius: 16px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        }
+        #color-panel.open { display: block; animation: scaleIn 0.2s; }
+        #color-panel .cp-title { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; }
+        #swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 14px; }
+        .swatch { width: 100%; aspect-ratio: 1; padding: 0; border-radius: 50%; border: 2px solid transparent; box-shadow: none; }
+        .swatch:hover { transform: scale(1.12); box-shadow: none; }
+        .swatch.active { outline: 3px solid var(--text-bright); outline-offset: 2px; }
+        #color-panel .custom-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 600; color: var(--text-bright); }
+        #custom-color-input { width: 48px; height: 34px; padding: 2px; margin: 0; border-radius: 8px; cursor: pointer; }
+        @media (max-width: 420px) {
+            .tb-btn.tb-logout { width: 42px; padding: 0; border-radius: 50%; }
+            .tb-btn.tb-logout .tb-text { display: none; }
+        }
+
+        /* ============ LIGHT MODE ============ */
+        html { color-scheme: dark; }
+        html[data-mode="light"] {
+            color-scheme: light;
+            --bg-dark: #EEF1FF; --bg-dark2: #F6F2FF; --bg-card: #FFFFFF; --bg-elevated: #EEF0FB;
+            --text-bright: #1E1B3A; --text-muted: #6A6590;
+            --gold: #B7860B; --success: #0E9F5B; --warning: #D97706; --danger: #E11D48;
+        }
+        html[data-mode="light"] body { background: linear-gradient(160deg, var(--bg-dark) 0%, var(--bg-dark2) 45%, #E9E4FF 100%); }
+        html[data-mode="light"] .bg-blob { opacity: 0.18; }
+        html[data-mode="light"] .screen { background: rgba(255, 255, 255, 0.9); border-color: rgba(80, 60, 140, 0.12); box-shadow: 0 20px 55px rgba(60, 40, 120, 0.18); }
+        html[data-mode="light"] h1, html[data-mode="light"] h2, html[data-mode="light"] h3 {
+            background-image: linear-gradient(135deg, var(--accent-2) 0%, var(--purple) 60%, var(--accent-warm) 100%);
+            -webkit-background-clip: text; background-clip: text;
+        }
+        html[data-mode="light"] .modal-overlay { background: rgba(30, 27, 58, 0.45); }
+        html[data-mode="light"] .modal-content, html[data-mode="light"] .card, html[data-mode="light"] .list-item,
+        html[data-mode="light"] .rank-row, html[data-mode="light"] .auth-tabs { border-color: rgba(80, 60, 140, 0.14); box-shadow: 0 4px 14px rgba(60, 40, 120, 0.1); }
+        html[data-mode="light"] input, html[data-mode="light"] select, html[data-mode="light"] textarea { border-color: rgba(80, 60, 140, 0.2); }
+        html[data-mode="light"] [style*="rgba(255, 255, 255"] { border-color: rgba(80, 60, 140, 0.14) !important; }
+        html[data-mode="light"] [style*="color: var(--accent-cool)"] { color: var(--accent-2) !important; }
+        html[data-mode="light"] .auth-hint a, html[data-mode="light"] .prepare-banner { color: var(--accent-2); }
+        html[data-mode="light"] .auth-tab.active, html[data-mode="light"] .tab-btn.active { color: var(--on-accent); }
+        html[data-mode="light"] #player-question-text { color: var(--text-bright); -webkit-text-fill-color: var(--text-bright); text-shadow: none; }
+        html[data-mode="light"] .timer-ring-bg, html[data-mode="light"] .rank-bar-track { stroke: rgba(80, 60, 140, 0.14); background: rgba(80, 60, 140, 0.12); }
+        html[data-mode="light"] .timer-ring-bg { background: none; }
+        html[data-mode="light"] .rank-gain-zero { background: rgba(80, 60, 140, 0.08); }
+        html[data-mode="light"] .tab-container { border-color: rgba(80, 60, 140, 0.12); }
+        html[data-mode="light"] #summary-list::-webkit-scrollbar-thumb { background: rgba(80, 60, 140, 0.25); }
+        html[data-mode="light"] .tb-btn { box-shadow: 0 4px 14px rgba(60, 40, 120, 0.18); }
+        html[data-mode="light"] .tb-btn.tb-logout { color: #fff; }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -433,6 +544,43 @@
     <audio id="snd-win" src="https://actions.google.com/sounds/v1/crowds/crowd_cheer.ogg"></audio>
 
     <div id="custom-toast">ข้อความแจ้งเตือน</div>
+
+    <!-- TOP TOOLBAR -->
+    <div id="top-toolbar">
+        <button class="tb-btn" id="mode-btn" title="สลับโหมดมืด / สว่าง" aria-label="สลับโหมดมืด / สว่าง">☀️</button>
+        <div class="tb-wrap">
+            <button class="tb-btn" id="color-btn" title="เปลี่ยนสีธีม" aria-label="เปลี่ยนสีธีม">🎨</button>
+            <div id="color-panel">
+                <p class="cp-title">เลือกสีธีม</p>
+                <div id="swatches"></div>
+                <label class="custom-row">สีที่กำหนดเอง <input type="color" id="custom-color-input" value="#00e5ff"></label>
+            </div>
+        </div>
+        <button class="tb-btn" id="settings-btn" title="เปลี่ยนรหัสผ่าน" aria-label="เปลี่ยนรหัสผ่าน" style="display:none;">🔑</button>
+        <button class="tb-btn tb-logout" id="logout-btn" title="ออกจากระบบ" aria-label="ออกจากระบบ" style="display:none;"><span>🚪</span><span class="tb-text">ออกจากระบบ</span></button>
+    </div>
+
+    <!-- CHANGE PASSWORD / PIN MODAL -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="settings-title">🔑 เปลี่ยนรหัสผ่าน</h2>
+            <div id="pw-form">
+                <input type="password" id="cp-old" placeholder="รหัสผ่านปัจจุบัน" autocomplete="current-password">
+                <input type="password" id="cp-new" placeholder="รหัสผ่านใหม่ (อย่างน้อย 4 ตัวอักษร)" autocomplete="new-password">
+                <input type="password" id="cp-new2" placeholder="ยืนยันรหัสผ่านใหม่" autocomplete="new-password">
+            </div>
+            <div id="pin-form" style="display:none;">
+                <input type="password" id="pin-old" inputmode="numeric" maxlength="6" placeholder="PIN ปัจจุบัน">
+                <input type="password" id="pin-new" inputmode="numeric" maxlength="6" placeholder="PIN ใหม่ (ตัวเลข 4-6 หลัก)">
+                <input type="password" id="pin-new2" inputmode="numeric" maxlength="6" placeholder="ยืนยัน PIN ใหม่">
+            </div>
+            <p class="auth-error" id="settings-error"></p>
+            <div style="display: flex; gap: 10px;">
+                <button id="settings-cancel" class="danger">ยกเลิก</button>
+                <button id="settings-save" class="success">บันทึก</button>
+            </div>
+        </div>
+    </div>
 
     <!-- PIN MODAL -->
     <div id="pin-modal" class="modal-overlay">
@@ -750,8 +898,14 @@
         };
 
         const switchScreen = (screenId) => {
+            // กันไม่ให้ listener ที่ค้างอยู่ดึงคนที่ออกจากระบบไปหน้าเกม
+            if(!currentUser && !isAdmin && screenId !== 'login-screen') return;
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
+            const loggedIn = screenId !== 'login-screen';
+            ['settings-btn', 'logout-btn'].forEach(id => {
+                document.getElementById(id).style.display = loggedIn ? 'flex' : 'none';
+            });
         };
 
         const playSound = (id) => {
@@ -899,7 +1053,7 @@
         });
 
         // ================= AUTH: LOGIN / REGISTER =================
-        const ADMIN_NAME = 'moosup';
+        const ADMIN_NAME = '3007x';
 
         function saveSession(name, pass) { try { localStorage.setItem('quiz_session', JSON.stringify({ name, pass })); } catch(e){} }
         function loadSession() { try { return JSON.parse(localStorage.getItem('quiz_session') || 'null'); } catch(e){ return null; } }
@@ -1013,8 +1167,10 @@
         document.getElementById('login-name').addEventListener('keydown', (e) => { if(e.key === 'Enter') document.getElementById('login-pass').focus(); });
         document.getElementById('reg-pass2').addEventListener('keydown', (e) => { if(e.key === 'Enter') doRegister(); });
 
+        let unsubKick = null;
         function monitorKick() {
-            onValue(ref(db, 'players/' + currentUser), (snapshot) => {
+            if(unsubKick) unsubKick();
+            unsubKick = onValue(ref(db, 'players/' + currentUser), (snapshot) => {
                 if(!snapshot.exists() && currentUser && !isAdmin) {
                     currentUser = '';
                     clearSession();
@@ -1050,8 +1206,18 @@
             document.getElementById('pin-modal').classList.remove('active');
         });
 
-        document.getElementById('submit-pin-btn').addEventListener('click', () => {
-            if(document.getElementById('admin-pin').value === '010203') {
+        // PIN แอดมิน: ใช้ค่าที่เปลี่ยนไว้ใน Firebase (settings/adminPin) ถ้ายังไม่เคยเปลี่ยนใช้ 010203
+        async function getAdminPin() {
+            try {
+                const s = await get(ref(db, 'settings/adminPin'));
+                if(s.exists()) return String(s.val());
+            } catch(e) {}
+            return '010203';
+        }
+
+        document.getElementById('submit-pin-btn').addEventListener('click', async () => {
+            const expectedPin = await getAdminPin();
+            if(document.getElementById('admin-pin').value === expectedPin) {
                 isAdmin = true;
                 document.getElementById('pin-modal').classList.remove('active');
                 switchScreen('admin-screen');
@@ -1063,13 +1229,15 @@
             }
         });
 
-        window.logoutAdmin = () => {
+        // ออกจากระบบ (ทั้งผู้เล่นและแอดมิน): ล้าง session แล้วโหลดหน้าใหม่ให้สถานะสะอาด
+        window.logout = () => {
+            if(!confirm('ต้องการออกจากระบบใช่ไหม?')) return;
             isAdmin = false;
-            switchScreen('login-screen');
-            document.getElementById('login-name').value = '';
-            localStorage.removeItem('quiz_username');
-            checkAdminName('');
+            currentUser = '';
+            clearSession();
+            location.reload();
         };
+        window.logoutAdmin = window.logout;
 
         function initAdminDashboard() {
             onValue(ref(db, 'questions'), (snapshot) => {
@@ -1727,6 +1895,91 @@
             showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'success');
         };
 
+        // ================= TOOLBAR: MODE / COLOUR / PASSWORD / LOGOUT =================
+        (function setupToolbar() {
+            const T = window.QuizTheme;
+            const modeBtn = document.getElementById('mode-btn');
+            const colorBtn = document.getElementById('color-btn');
+            const panel = document.getElementById('color-panel');
+            const swatchBox = document.getElementById('swatches');
+            const customInput = document.getElementById('custom-color-input');
+
+            const refreshModeIcon = () => {
+                const light = T.getMode() === 'light';
+                modeBtn.textContent = light ? '🌙' : '☀️';
+                modeBtn.title = light ? 'สลับเป็นโหมดมืด' : 'สลับเป็นโหมดสว่าง';
+            };
+            modeBtn.addEventListener('click', () => { T.applyMode(T.getMode() === 'light' ? 'dark' : 'light'); refreshModeIcon(); });
+            refreshModeIcon();
+
+            const refreshSwatches = () => {
+                const cur = T.getAccent();
+                swatchBox.querySelectorAll('.swatch').forEach(b => b.classList.toggle('active', b.dataset.key === cur));
+                if(cur.startsWith('custom:')) customInput.value = cur.slice(7);
+                else customInput.value = T.PRESETS[cur] ? T.PRESETS[cur].c : '#00e5ff';
+            };
+            Object.keys(T.PRESETS).forEach(key => {
+                const p = T.PRESETS[key];
+                const b = document.createElement('button');
+                b.className = 'swatch'; b.dataset.key = key; b.title = p.name; b.setAttribute('aria-label', p.name);
+                b.style.background = `linear-gradient(135deg, ${p.c}, ${p.c2})`;
+                b.addEventListener('click', () => { T.applyAccent(key); refreshSwatches(); });
+                swatchBox.appendChild(b);
+            });
+            customInput.addEventListener('input', (e) => { T.applyAccent('custom:' + e.target.value); refreshSwatches(); });
+            refreshSwatches();
+
+            colorBtn.addEventListener('click', (e) => { e.stopPropagation(); panel.classList.toggle('open'); });
+            panel.addEventListener('click', (e) => e.stopPropagation());
+            document.addEventListener('click', () => panel.classList.remove('open'));
+
+            document.getElementById('logout-btn').addEventListener('click', () => window.logout());
+        })();
+
+        // ---- เปลี่ยนรหัสผ่านผู้เล่น / PIN แอดมิน ----
+        const settingsModal = document.getElementById('settings-modal');
+        const settingsErr = document.getElementById('settings-error');
+
+        document.getElementById('settings-btn').addEventListener('click', () => {
+            document.getElementById('settings-title').textContent = isAdmin ? '🔐 เปลี่ยน PIN แอดมิน' : '🔑 เปลี่ยนรหัสผ่าน';
+            document.getElementById('pw-form').style.display = isAdmin ? 'none' : 'block';
+            document.getElementById('pin-form').style.display = isAdmin ? 'block' : 'none';
+            ['cp-old', 'cp-new', 'cp-new2', 'pin-old', 'pin-new', 'pin-new2'].forEach(id => document.getElementById(id).value = '');
+            settingsErr.textContent = '';
+            settingsModal.classList.add('active');
+        });
+        document.getElementById('settings-cancel').addEventListener('click', () => settingsModal.classList.remove('active'));
+
+        document.getElementById('settings-save').addEventListener('click', async () => {
+            settingsErr.textContent = '';
+            try {
+                if(isAdmin) {
+                    const oldPin = document.getElementById('pin-old').value;
+                    const newPin = document.getElementById('pin-new').value;
+                    const newPin2 = document.getElementById('pin-new2').value;
+                    if(oldPin !== await getAdminPin()) { settingsErr.textContent = 'PIN ปัจจุบันไม่ถูกต้อง'; return; }
+                    if(!/^\d{4,6}$/.test(newPin)) { settingsErr.textContent = 'PIN ใหม่ต้องเป็นตัวเลข 4-6 หลัก'; return; }
+                    if(newPin !== newPin2) { settingsErr.textContent = 'PIN ยืนยันไม่ตรงกัน'; return; }
+                    await set(ref(db, 'settings/adminPin'), newPin);
+                    showToast('เปลี่ยน PIN แอดมินสำเร็จ', 'success');
+                } else {
+                    const oldPass = document.getElementById('cp-old').value;
+                    const newPass = document.getElementById('cp-new').value;
+                    const newPass2 = document.getElementById('cp-new2').value;
+                    const snap = await get(ref(db, 'members/' + currentUser));
+                    if(!snap.exists() || snap.val().password !== oldPass) { settingsErr.textContent = 'รหัสผ่านปัจจุบันไม่ถูกต้อง'; return; }
+                    if(newPass.length < 4) { settingsErr.textContent = 'รหัสผ่านใหม่ต้องยาวอย่างน้อย 4 ตัวอักษร'; return; }
+                    if(newPass !== newPass2) { settingsErr.textContent = 'รหัสผ่านยืนยันไม่ตรงกัน'; return; }
+                    if(newPass === oldPass) { settingsErr.textContent = 'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสเดิม'; return; }
+                    await update(ref(db, 'members/' + currentUser), { password: newPass });
+                    saveSession(currentUser, newPass);
+                    showToast('เปลี่ยนรหัสผ่านสำเร็จ', 'success');
+                }
+                settingsModal.classList.remove('active');
+            } catch(err) {
+                settingsErr.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
+            }
+        });
     </script>
 </body>
 </html>
