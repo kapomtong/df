@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Realtime - เกมตอบคำถาม</title>
+    <title>ตอบคำถาม</title>
     <script>
     /* ===== Theme engine (mode + accent colour) ===== */
     window.QuizTheme = (function(){
@@ -643,7 +643,7 @@
         <div id="login-screen" class="screen active">
             <div style="text-align: center; margin-bottom: 26px;">
                 <div style="font-size: 64px; margin-bottom: 16px;">🚀</div>
-                <h1 style="font-size: 32px;">Quiz Realtime</h1>
+                <h1 style="font-size: 32px;">เกมตอบคำถาม</h1>
                 <p style="color: var(--text-muted); margin-top: 8px;">เกมตอบคำถามแบบเรียลไทม์ ยิ่งเร็วยิ่งได้เยอะ!</p>
             </div>
 
@@ -704,7 +704,7 @@
                     </svg>
                     <div id="player-timer" class="timer-ring-text">20</div>
                 </div>
-                <p class="potential-points">⚡ ตอบตอนนี้ได้สูงสุด ~<span id="potential-points-val">1000</span> คะแนน</p>
+                <p class="potential-points">⚡ ตอบตอนนี้ได้<span id="potential-points-val">1000</span> คะแนน</p>
                 <h2 id="player-question-text" style="margin-bottom: 8px; font-size: 20px;">คำถาม?</h2>
                 <p id="player-question-points" style="text-align: center; color: var(--gold); font-weight: 700; margin-bottom: 20px; font-size: 15px; background: none; -webkit-text-fill-color: var(--gold);">(1000 คะแนนเต็ม)</p>
                 <img id="player-question-img" class="question-image" src="" alt="">
@@ -1053,7 +1053,7 @@
         });
 
         // ================= AUTH: LOGIN / REGISTER =================
-        const ADMIN_NAME = '3007x';
+        const ADMIN_NAME = 'moosup';
 
         function saveSession(name, pass) { try { localStorage.setItem('quiz_session', JSON.stringify({ name, pass })); } catch(e){} }
         function loadSession() { try { return JSON.parse(localStorage.getItem('quiz_session') || 'null'); } catch(e){ return null; } }
