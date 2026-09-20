@@ -2,88 +2,30 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>ตอบคำถาม</title>
-    <script>
-    /* ===== Theme engine (mode + accent colour) ===== */
-    window.QuizTheme = (function(){
-        var PRESETS = {
-            neon:   { name:'นีออน',   c:'#00E5FF', c2:'#0891b2', warm:'#FF2E9A', purple:'#B14EFF' },
-            rose:   { name:'ชมพู',    c:'#FF5FA8', c2:'#BE185D', warm:'#FFA630', purple:'#A855F7' },
-            sunset: { name:'ส้ม',     c:'#FF8A3D', c2:'#C2560A', warm:'#FF2E9A', purple:'#D946EF' },
-            forest: { name:'เขียว',   c:'#2DD4A0', c2:'#0F8F6C', warm:'#FFD60A', purple:'#16A34A' },
-            ocean:  { name:'น้ำเงิน', c:'#4D9BFF', c2:'#1D4ED8', warm:'#00E5FF', purple:'#6366F1' },
-            grape:  { name:'ม่วง',    c:'#B14EFF', c2:'#7c1fd8', warm:'#FF2E9A', purple:'#6D28D9' }
-        };
-        function hexToRgb(h){ h=h.replace('#',''); var n=parseInt(h,16); return [n>>16&255, n>>8&255, n&255]; }
-        function toHex(rgb){ return '#'+rgb.map(function(v){ return ('0'+Math.max(0,Math.min(255,Math.round(v))).toString(16)).slice(-2); }).join(''); }
-        function lum(rgb){ return (0.299*rgb[0]+0.587*rgb[1]+0.114*rgb[2])/255; }
-        function store(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
-        function load(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
-
-        function applyMode(m){
-            if(m!=='light') m='dark';
-            document.documentElement.setAttribute('data-mode', m);
-            store('quiz_mode', m);
-            return m;
-        }
-        function applyAccent(key){
-            var st=document.documentElement.style, hex, c2, warm=null, purple=null;
-            if(PRESETS[key]){ var p=PRESETS[key]; hex=p.c; c2=p.c2; warm=p.warm; purple=p.purple; }
-            else if(/^custom:#[0-9a-fA-F]{6}$/.test(key||'')){ hex=key.slice(7); c2=toHex(hexToRgb(hex).map(function(v){return v*0.7;})); }
-            else { key='neon'; var d=PRESETS.neon; hex=d.c; c2=d.c2; warm=d.warm; purple=d.purple; }
-            var rgb=hexToRgb(hex);
-            st.setProperty('--accent-cool', hex);
-            st.setProperty('--accent-2', c2);
-            st.setProperty('--accent-rgb', rgb.join(', '));
-            st.setProperty('--on-accent', lum(rgb)>0.55 ? '#04141a' : '#ffffff');
-            if(warm) st.setProperty('--accent-warm', warm); else st.removeProperty('--accent-warm');
-            if(purple) st.setProperty('--purple', purple); else st.removeProperty('--purple');
-            store('quiz_accent', key);
-            return key;
-        }
-        var api = { PRESETS:PRESETS, applyMode:applyMode, applyAccent:applyAccent,
-            getMode:function(){ return document.documentElement.getAttribute('data-mode')||'dark'; },
-            getAccent:function(){ return load('quiz_accent')||'neon'; } };
-        applyMode(load('quiz_mode')); applyAccent(load('quiz_accent'));
-        return api;
-    })();
-    </script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Realtime - เกมตอบคำถาม</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap');
-
-        /* ================= VIBRANT GAME-SHOW THEME ================= */
+        /* ================= MODERN THEME ================= */
         :root {
-            --bg-dark: #0A0714;
-            --bg-dark2: #150C28;
-            --bg-card: #1C1233;
-            --bg-elevated: #2A1C4A;
+            --bg-dark: #0B0E14;
+            --bg-card: #1E293B;
+            --bg-elevated: #334155;
             --text-bright: #F8FAFC;
-            --text-muted: #A394C7;
-            --accent-cool: #00E5FF;
-            --accent-warm: #FF2E9A;
-            --gold: #FFD60A;
-            --success: #39FF88;
-            --danger: #FF3B5C;
-            --warning: #FFA630;
-            --purple: #B14EFF;
-            --accent-2: #0891b2; --accent-rgb: 0, 229, 255; --on-accent: #04141a;
-            --opt-a: #FF3B5C; --opt-a2: #C81846;
-            --opt-b: #3B82F6; --opt-b2: #1E3A8A;
-            --opt-c: #FFD60A; --opt-c2: #D4A800;
-            --opt-d: #22D37A; --opt-d2: #0F9B52;
+            --text-muted: #94A3B8;
+            --accent-cool: #38BDF8;
+            --accent-warm: #F97316;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --purple: #A855F7;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        html { min-height: 100%; }
-        body { min-height: 100dvh; } /* ให้หน้ายาวเลื่อนได้ ไม่ถูกตัดด้านบนบนมือถือ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Noto Sans Thai', 'Kanit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(160deg, var(--bg-dark) 0%, var(--bg-dark2) 45%, #1a0f30 100%);
+            font-family: 'Prompt', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1f2e 50%, #0f1419 100%);
             color: var(--text-bright);
             min-height: 100vh;
             display: flex;
@@ -93,29 +35,24 @@
             position: relative;
         }
 
-        /* Floating glow blobs in background */
-        .bg-blob {
+        /* Animated background particles */
+        body::before {
+            content: '';
             position: fixed;
-            border-radius: 50%;
-            filter: blur(70px);
-            opacity: 0.32;
-            z-index: 0;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(249, 115, 22, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
             pointer-events: none;
-            animation: drift 16s ease-in-out infinite alternate;
-        }
-        .bg-blob-1 { width: 320px; height: 320px; background: var(--accent-cool); top: -80px; left: -80px; }
-        .bg-blob-2 { width: 280px; height: 280px; background: var(--accent-warm); bottom: -80px; right: -60px; animation-delay: 2.5s; }
-        .bg-blob-3 { width: 240px; height: 240px; background: var(--purple); top: 40%; right: -100px; animation-delay: 5s; }
-        .bg-blob-4 { width: 200px; height: 200px; background: var(--gold); bottom: 20%; left: -80px; animation-delay: 7.5s; opacity: 0.2; }
-
-        @keyframes drift {
-            from { transform: translate(0, 0) scale(1); }
-            to { transform: translate(40px, -30px) scale(1.2); }
+            z-index: 0;
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.55; }
+            50% { opacity: 0.6; }
         }
 
         @keyframes slideUp {
@@ -129,48 +66,37 @@
         }
 
         @keyframes glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.35); }
-            50% { box-shadow: 0 0 45px rgba(var(--accent-rgb), 0.7); }
+            0%, 100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(56, 189, 248, 0.6); }
         }
-
-        @keyframes screenShake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-10px); }
-            40% { transform: translateX(9px); }
-            60% { transform: translateX(-7px); }
-            80% { transform: translateX(5px); }
-        }
-        .screen.shake { animation: screenShake 0.4s; }
 
         .app-container {
             width: 100%;
             max-width: 900px;
-            padding: calc(68px + env(safe-area-inset-top, 0px)) 16px 16px;
+            padding: 16px;
             position: relative;
             z-index: 1;
         }
 
         .screen {
             display: none;
-            background: rgba(28, 18, 51, 0.88);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            background: var(--bg-card);
             padding: 2rem;
-            border-radius: 26px;
-            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.12) inset;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1) inset;
             animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            border: 1px solid rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         .screen.active { display: block; }
 
         h1, h2, h3 {
-            background: linear-gradient(135deg, var(--accent-cool) 0%, var(--purple) 60%, var(--accent-warm) 100%);
+            background: linear-gradient(135deg, var(--accent-cool) 0%, var(--purple) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-align: center;
             margin-bottom: 1rem;
-            font-weight: 800;
+            font-weight: 700;
         }
 
         input, select, textarea {
@@ -187,22 +113,22 @@
         }
         input:focus, select:focus, textarea:focus {
             border-color: var(--accent-cool);
-            box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.18);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
             background: var(--bg-card);
         }
         input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
         button {
             width: 100%;
-            padding: 15px 20px;
-            background: linear-gradient(135deg, var(--accent-cool) 0%, var(--accent-2) 100%);
-            color: var(--on-accent);
+            padding: 14px 20px;
+            background: linear-gradient(135deg, var(--accent-cool) 0%, #0ea5e9 100%);
+            color: white;
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             font-size: 15px;
-            font-weight: 800;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.2s;
             position: relative;
             overflow: hidden;
         }
@@ -212,35 +138,39 @@
             top: 50%; left: 50%;
             width: 0; height: 0;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.2);
             transform: translate(-50%, -50%);
             transition: width 0.6s, height 0.6s;
         }
-        button:active::before { width: 320px; height: 320px; }
-        button:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 10px 26px rgba(var(--accent-rgb), 0.4); }
-        button:active { transform: translateY(0) scale(0.98); }
-        button.danger { background: linear-gradient(135deg, var(--danger) 0%, #b91c3c 100%); color: white; }
-        button.danger:hover { box-shadow: 0 10px 26px rgba(255, 59, 92, 0.4); }
-        button.success { background: linear-gradient(135deg, var(--success) 0%, #059669 100%); color: #052e1c; }
-        button.success:hover { box-shadow: 0 10px 26px rgba(57, 255, 136, 0.4); }
-        button.warning { background: linear-gradient(135deg, var(--warning) 0%, #c2620a 100%); color: #2a1400; }
-        button.warning:hover { box-shadow: 0 10px 26px rgba(255, 166, 48, 0.4); }
-        button.purple { background: linear-gradient(135deg, var(--purple) 0%, #7c1fd8 100%); color: white; }
-        button.purple:hover { box-shadow: 0 10px 26px rgba(177, 78, 255, 0.4); }
-        button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
-        
-        /* ============ AUTH (LOGIN/REGISTER) ============ */
-        .auth-tabs { display: flex; gap: 8px; margin-bottom: 18px; background: var(--bg-elevated); border-radius: 14px; padding: 6px; }
-        .auth-tab { flex: 1; padding: 12px; border: none; border-radius: 10px; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.25s; }
-        .auth-tab.active { background: linear-gradient(135deg, var(--accent-cool) 0%, var(--accent-2) 100%); color: var(--on-accent); box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.35); }
-        .auth-hint { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 14px; }
-        .auth-hint a { color: var(--accent-cool); cursor: pointer; font-weight: 700; text-decoration: none; }
-        .auth-hint a:hover { text-decoration: underline; }
-        .auth-error { color: var(--danger); font-size: 13px; text-align: center; margin: -6px 0 12px; min-height: 18px; font-weight: 600; }
+        button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4);
+        }
+        button:active { transform: translateY(0); }
+        button.danger { background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%); }
+        button.danger:hover { box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); }
+        button.success { background: linear-gradient(135deg, var(--success) 0%, #059669 100%); }
+        button.success:hover { box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        button.warning { background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%); }
+        button.warning:hover { box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4); }
+        button.purple { background: linear-gradient(135deg, var(--purple) 0%, #9333ea 100%); }
+        button.purple:hover { box-shadow: 0 8px 20px rgba(168, 85, 247, 0.4); }
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
 
         /* TOAST */
         #custom-toast {
-            position: fixed; top: 0; left: 50%;
+            position: fixed;
+            top: 0;
+            left: 50%;
             transform: translate(-50%, -100%);
             background: var(--bg-elevated);
             color: var(--text-bright);
@@ -249,358 +179,451 @@
             z-index: 9999;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             opacity: 0;
-            font-weight: 600;
+            font-weight: 500;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        #custom-toast.show { transform: translate(-50%, 24px); opacity: 1; }
+        #custom-toast.show {
+            transform: translate(-50%, 24px);
+            opacity: 1;
+        }
 
         /* MODAL */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(11, 14, 20, 0.85);
             backdrop-filter: blur(8px);
-            display: none; justify-content: center; align-items: center; z-index: 500;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 500;
         }
         .modal-overlay.active { display: flex; }
         .modal-content {
             background: var(--bg-card);
             padding: 2rem;
             border-radius: 20px;
-            width: 90%; max-width: 500px;
+            width: 90%;
+            max-width: 500px;
             animation: scaleIn 0.3s;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            max-height: 90vh; overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
-        .admin-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media (min-width: 768px) { .admin-grid { grid-template-columns: 1fr 1fr; } }
+        /* CARDS & GRIDS */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 768px) {
+            .admin-grid { grid-template-columns: 1fr 1fr; }
+        }
 
         .card {
             background: var(--bg-elevated);
             padding: 20px;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
-        /* ============ OPTIONS ============ */
+        /* OPTIONS */
         .options-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-bottom: 15px;
         }
-        .option-btn {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            color: white; border: none; font-size: 16px; font-weight: 800;
-            padding: 20px 14px; min-height: 76px; border-radius: 16px; position: relative;
-            overflow: hidden; transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-        }
-        .option-btn.opt-a { background: linear-gradient(135deg, var(--opt-a), var(--opt-a2)); }
-        .option-btn.opt-b { background: linear-gradient(135deg, var(--opt-b), var(--opt-b2)); }
-        .option-btn.opt-c { background: linear-gradient(135deg, var(--opt-c), var(--opt-c2)); color: #3a2c00; }
-        .option-btn.opt-d { background: linear-gradient(135deg, var(--opt-d), var(--opt-d2)); }
-        .opt-shape { font-size: 22px; flex-shrink: 0; }
-        .opt-label { text-align: left; }
-        .option-btn:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.08); }
-        .option-btn:active { transform: translateY(0) scale(0.97); }
-        .option-btn.selected { outline: 4px solid white; transform: scale(0.97); }
-        .option-btn.correct { animation: correctPulse 0.6s ease; box-shadow: 0 0 0 6px rgba(57, 255, 136, 0.5), 0 0 40px rgba(57, 255, 136, 0.6); }
-        .option-btn.wrong { animation: shakeBtn 0.5s; opacity: 0.55; }
-        @keyframes correctPulse { 0% { transform: scale(1); } 50% { transform: scale(1.07); } 100% { transform: scale(1); } }
-        @keyframes shakeBtn {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-8px); } 40% { transform: translateX(8px); }
-            60% { transform: translateX(-6px); } 80% { transform: translateX(6px); }
-        }
-
         .question-image {
-            max-width: 100%; border-radius: 12px; margin-bottom: 15px;
-            max-height: 250px; object-fit: cover; display: none;
-            margin-left: auto; margin-right: auto;
+            width: 100%;
+            max-width: 340px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            height: 220px;
+            display: none;
+            margin-left: auto;
+            margin-right: auto;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            background: var(--bg-elevated);
         }
-
-        #player-question-text {
-            font-size: 26px !important; line-height: 1.5; font-weight: 800;
-            color: #FFFFFF; -webkit-text-fill-color: #FFFFFF; background: none;
-            text-align: center; margin-bottom: 12px; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+        /* ===== SMART IMAGE FIT (auto-decided by fitSmartImage()) ===== */
+        /* โลโก้ / ไอคอน / ตราสัญลักษณ์ -> โชว์เต็มรูป ไม่ครอปทิ้ง ไม่ยืด */
+        .question-image.fit-logo {
+            object-fit: contain;
+            padding: 18px;
+            background: linear-gradient(135deg, #ffffff 0%, #eef2f7 100%);
         }
-
-        .prepare-banner {
-            text-align: center; padding: 28px 16px; margin-bottom: 15px;
-            background: rgba(var(--accent-rgb), 0.08); border: 2px dashed rgba(var(--accent-rgb), 0.35);
-            border-radius: 16px; font-size: 20px; font-weight: 800; color: var(--accent-cool);
-            animation: pulse 1s infinite;
+        /* รูปคน/นักกีฬา -> เต็มกรอบ แต่เอียงจุดโฟกัสขึ้นบนกันหน้าโดนตัด */
+        .question-image.fit-person {
+            object-fit: cover;
+            object-position: center 18%;
         }
-        .prepare-banner .countdown { font-size: 34px; display: block; margin-top: 6px; }
-
-        @keyframes questionSlideIn { 0% { opacity: 0; transform: translateY(-26px) scale(0.96); } 60% { opacity: 1; transform: translateY(4px) scale(1.005); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes qImgZoomIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
-        @keyframes bannerPopOut { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.85); } }
-        @keyframes optionPopIn { 0% { opacity: 0; transform: translateY(22px) scale(0.9); } 70% { opacity: 1; transform: translateY(-3px) scale(1.02); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes timerDropIn { 0% { opacity: 0; transform: translateY(-18px) scale(0.8); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-
-        .anim-question-in  { animation: questionSlideIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .anim-img-in       { animation: qImgZoomIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .anim-banner-out   { animation: bannerPopOut 0.3s ease-in both; }
-        .anim-option-in    { animation: optionPopIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .anim-timer-in     { animation: timerDropIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
-
-        @media (max-width: 640px) { #player-question-text { font-size: 21px !important; } }
+        /* ภาพทั่วไป/บรรยากาศ/สนาม ฯลฯ -> เต็มกรอบกึ่งกลางปกติ */
+        .question-image.fit-scene {
+            object-fit: cover;
+            object-position: center center;
+        }
+        .img-type-select {
+            margin-bottom: 8px !important;
+        }
+        .img-type-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: -8px;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .img-preview-box {
+            width: 140px;
+            height: 100px;
+            border-radius: 10px;
+            margin: 0 auto 15px;
+            display: none;
+            background: var(--bg-elevated);
+            border: 1px dashed rgba(255,255,255,0.15);
+        }
 
         .list-item {
-            display: flex; justify-content: space-between; padding: 12px 16px;
-            background: var(--bg-card); border-radius: 12px; margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.06); animation: slideUp 0.3s;
-        }
-
-        /* ============ TIMER RING ============ */
-        .timer-ring-wrap { position: relative; width: 130px; height: 130px; margin: 0 auto 14px; }
-        .timer-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-        .timer-ring-bg { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 10; }
-        .timer-ring-progress {
-            fill: none; stroke: var(--accent-cool); stroke-width: 10; stroke-linecap: round;
-            stroke-dasharray: 314.159; stroke-dashoffset: 0; transition: stroke-dashoffset 0.25s linear, stroke 0.3s;
-        }
-        .timer-ring-text {
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-            font-size: 40px; font-weight: 800; color: var(--text-bright);
-        }
-        .timer-ring-wrap.danger .timer-ring-progress { stroke: var(--danger); }
-        .timer-ring-wrap.danger .timer-ring-text { color: var(--danger); animation: pulse 0.6s infinite; }
-        .potential-points { text-align: center; font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 16px; }
-
-        /* ============ FLOATING POINTS ============ */
-        .float-point {
-            position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%);
-            font-size: 36px; font-weight: 900; color: var(--success);
-            z-index: 600; pointer-events: none; animation: floatUp 1.2s ease-out forwards;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-        .float-point.bonus { color: var(--gold); font-size: 20px; top: 55%; animation-delay: 0.15s; }
-        @keyframes floatUp {
-            0% { opacity: 0; transform: translate(-50%, -40%) scale(0.6); }
-            15% { opacity: 1; transform: translate(-50%, -55%) scale(1.15); }
-            100% { opacity: 0; transform: translate(-50%, -160%) scale(1); }
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            animation: slideUp 0.3s;
         }
 
         .streak-badge {
             background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
-            color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700;
-            display: none; animation: scaleIn 0.3s; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            display: none;
+            animation: scaleIn 0.3s;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
         }
 
-        /* ============ PODIUM ============ */
-        .podium-container { display: flex; justify-content: center; align-items: flex-end; height: 280px; margin-top: 40px; gap: 12px; }
+        /* PODIUM */
+        .podium-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 280px;
+            margin-top: 40px;
+            gap: 12px;
+        }
         .podium-bar {
-            width: 30%; border-radius: 16px 16px 0 0; display: flex; flex-direction: column;
-            justify-content: flex-start; align-items: center; color: white; font-weight: bold;
-            padding-top: 20px; position: relative; box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
-            animation: slideUpPodium 1s ease forwards; opacity: 0; transform: translateY(100px);
+            width: 30%;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            padding-top: 20px;
+            position: relative;
+            box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
+            animation: slideUpPodium 1s ease forwards;
+            opacity: 0;
+            transform: translateY(100px);
         }
         .podium-name {
-            position: absolute; top: -40px; color: var(--text-bright); font-size: 17px; width: 100%;
-            text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;
+            position: absolute;
+            top: -40px;
+            color: var(--text-bright);
+            font-size: 17px;
+            width: 100%;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 700;
         }
-        .podium-score { font-size: 17px; opacity: 0.95; margin-top: 8px; font-weight: 800; }
-        .place-2 { height: 55%; background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%); animation-delay: 0.2s; }
-        .place-1 { height: 85%; background: linear-gradient(180deg, var(--gold) 0%, #d97706 100%); animation-delay: 0.6s; z-index: 10; box-shadow: 0 -14px 36px rgba(255, 214, 10, 0.5); }
-        .place-3 { height: 40%; background: linear-gradient(180deg, #b87333 0%, #78350f 100%); animation-delay: 0.4s; }
-        @keyframes slideUpPodium { to { opacity: 1; transform: translateY(0); } }
+        .podium-score { font-size: 15px; opacity: 0.95; margin-top: 8px; }
+        .place-2 {
+            height: 55%;
+            background: linear-gradient(180deg, #64748b 0%, #475569 100%);
+            animation-delay: 0.2s;
+        }
+        .place-1 {
+            height: 85%;
+            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+            animation-delay: 0.6s;
+            z-index: 10;
+            box-shadow: 0 -12px 32px rgba(245, 158, 11, 0.5);
+        }
+        .place-3 {
+            height: 40%;
+            background: linear-gradient(180deg, #92400e 0%, #78350f 100%);
+            animation-delay: 0.4s;
+        }
 
-        /* ============ ROUND SUMMARY ============ */
-        /* แก้ไขเพื่อรองรับการเลื่อนได้เมื่อคนเล่นเยอะ และแก้แอนิเมชันบั๊กไม่แสดงรายการบนมือถือ */
-        #summary-list {
-            max-height: 55vh;
-            overflow-y: auto;
-            padding-right: 6px;
+        @keyframes slideUpPodium {
+            to { opacity: 1; transform: translateY(0); }
         }
-        #summary-list::-webkit-scrollbar { width: 6px; }
-        #summary-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
-        #summary-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
-        
-        .rank-row { display: flex; align-items: center; gap: 14px; background: var(--bg-elevated); padding: 12px 16px; border-radius: 14px; margin-bottom: 10px; animation: rankIn 0.5s ease both; border: 1px solid rgba(255, 255, 255, 0.06); }
-        @keyframes rankIn { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: translateX(0); } }
-        .rank-row.rank-1 { background: linear-gradient(135deg, rgba(255,214,10,0.22), var(--bg-elevated)); border-color: var(--gold); box-shadow: 0 0 24px rgba(255,214,10,0.22); }
-        .rank-medal { font-size: 24px; width: 38px; text-align: center; font-weight: 800; color: var(--text-muted); flex-shrink: 0; }
-        .rank-row.rank-1 .rank-medal, .rank-row.rank-2 .rank-medal, .rank-row.rank-3 .rank-medal { font-size: 28px; }
-        .rank-info { flex: 1; min-width: 0; }
-        .rank-name { font-weight: 700; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .rank-bar-track { height: 8px; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; }
-        .rank-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent-cool), var(--purple)); border-radius: 6px; width: 0%; transition: width 1s cubic-bezier(0.16,1,0.3,1); }
-        .rank-score-wrap { text-align: right; min-width: 70px; flex-shrink: 0; }
-        .rank-score { font-size: 20px; font-weight: 800; color: var(--text-bright); }
-        .rank-gain { display: inline-block; margin-top: 2px; font-size: 12px; font-weight: 800; color: var(--success); background: rgba(57,255,136,0.14); padding: 2px 8px; border-radius: 10px; animation: scaleIn 0.3s; }
-        .rank-gain-zero { color: var(--text-muted); background: rgba(255,255,255,0.06); }
-        .mini-flame { font-size: 12px; color: var(--warning); margin-left: 6px; }
 
         /* TABS */
-        .tab-container { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.05); padding-bottom: 8px; }
-        .tab-btn { flex: 1; padding: 10px; background: transparent; border: none; border-radius: 8px 8px 0 0; color: var(--text-muted); cursor: pointer; transition: all 0.2s; font-weight: 600; font-size: 14px; }
-        .tab-btn.active { background: var(--accent-cool); color: var(--on-accent); }
+        .tab-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 8px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .tab-btn.active {
+            background: var(--accent-cool);
+            color: white;
+        }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: slideUp 0.3s; }
 
         /* FILE UPLOAD */
-        .file-upload-area { border: 2px dashed rgba(var(--accent-rgb), 0.3); border-radius: 12px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(var(--accent-rgb), 0.05); }
-        .file-upload-area:hover { border-color: var(--accent-cool); background: rgba(var(--accent-rgb), 0.1); }
-        .file-upload-area.dragover { border-color: var(--accent-warm); background: rgba(255, 46, 154, 0.1); }
+        .file-upload-area {
+            border: 2px dashed rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(56, 189, 248, 0.05);
+        }
+        .file-upload-area:hover {
+            border-color: var(--accent-cool);
+            background: rgba(56, 189, 248, 0.1);
+        }
+        .file-upload-area.dragover {
+            border-color: var(--accent-warm);
+            background: rgba(249, 115, 22, 0.1);
+        }
 
-        .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .badge-live { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; animation: pulse 2s infinite; }
+        /* BADGE */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-live {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            animation: pulse 2s infinite;
+        }
 
+
+        /* ================= FLOATING LIGHT BLOBS ================= */
+        .bg-blobs { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(80px); will-change: transform; }
+        .blob.b1 { width: 400px; height: 400px; background: #2F6FED; opacity: .45; top: -110px; left: -100px; animation: drift1 22s ease-in-out infinite; }
+        .blob.b2 { width: 360px; height: 360px; background: #E5334B; opacity: .35; bottom: -120px; right: -80px; animation: drift2 27s ease-in-out infinite; }
+        .blob.b3 { width: 300px; height: 300px; background: #F2B01E; opacity: .22; top: 40%; right: -130px; animation: drift3 31s ease-in-out infinite; }
+        .blob.b4 { width: 330px; height: 330px; background: #1FAE6B; opacity: .25; bottom: 6%; left: -120px; animation: drift4 25s ease-in-out infinite; }
+        @keyframes drift1 { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(140px,90px) scale(1.15); } 66% { transform: translate(50px,180px) scale(.95); } }
+        @keyframes drift2 { 0%,100% { transform: translate(0,0) scale(1); } 40% { transform: translate(-160px,-70px) scale(1.2); } 70% { transform: translate(-60px,-150px) scale(.9); } }
+        @keyframes drift3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-180px,-120px) scale(1.25); } }
+        @keyframes drift4 { 0%,100% { transform: translate(0,0) scale(1); } 35% { transform: translate(150px,-100px) scale(1.1); } 70% { transform: translate(90px,60px) scale(1.2); } }
+
+        /* ================= GAME-SHOW ANSWER BUTTONS ================= */
+        .option-btn {
+            --c: #64748b; --cd: #475569; --fg: #fff;
+            display: flex; align-items: center; gap: 12px;
+            text-align: left;
+            min-height: 78px;
+            padding: 14px 16px;
+            font-size: 17px; font-weight: 700;
+            background: var(--c); color: var(--fg);
+            border: none; border-radius: 16px;
+            box-shadow: 0 6px 0 var(--cd), 0 14px 26px rgba(0,0,0,.35);
+            transition: transform .12s, box-shadow .12s, opacity .3s, filter .3s;
+        }
+        .option-btn.opt-1 { --c: #E5334B; --cd: #A61E33; }
+        .option-btn.opt-2 { --c: #2F6FED; --cd: #1E4CB0; }
+        .option-btn.opt-3 { --c: #F2B01E; --cd: #B57F0A; --fg: #2b1d00; }
+        .option-btn.opt-4 { --c: #1FAE6B; --cd: #12784A; }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 var(--cd), 0 18px 30px rgba(0,0,0,.4);
+            background: var(--c); color: var(--fg);
+        }
+        .option-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 var(--cd); }
+        .option-btn:disabled { opacity: 1; cursor: default; transform: translateY(3px); box-shadow: 0 3px 0 var(--cd); }
+        .opt-shape {
+            flex: none; width: 40px; height: 40px;
+            display: grid; place-items: center;
+            background: rgba(0,0,0,.22); border-radius: 11px;
+            font-size: 20px; line-height: 1;
+        }
+        .opt-label { flex: 1; line-height: 1.25; word-break: break-word; }
+        .option-btn.selected { outline: 4px solid #fff; outline-offset: 3px; }
+        .option-btn.dim { opacity: .35; filter: saturate(.5); }
+        .option-btn.correct {
+            outline: 4px solid #fff; outline-offset: 3px;
+            opacity: 1; filter: none;
+            animation: correctPop .7s cubic-bezier(.16,1,.3,1), correctGlow 1.4s ease-in-out .7s infinite;
+        }
+        .option-btn.wrong { outline: none; opacity: .75; filter: grayscale(.85); animation: wrongNudge .45s; }
+        .option-btn.correct::after, .option-btn.wrong::after {
+            position: absolute; top: 8px; right: 10px;
+            width: 26px; height: 26px; border-radius: 50%;
+            display: grid; place-items: center;
+            font-size: 15px; font-weight: 800;
+        }
+        .option-btn.correct::after { content: '✓'; background: #fff; color: #0a7a45; }
+        .option-btn.wrong::after { content: '✗'; background: #fff; color: #b91c1c; }
+        @keyframes correctPop { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: translateY(3px) scale(1); } }
+        @keyframes correctGlow { 0%,100% { box-shadow: 0 3px 0 var(--cd), 0 0 0 rgba(255,255,255,0); } 50% { box-shadow: 0 3px 0 var(--cd), 0 0 34px rgba(255,255,255,.55); } }
+        @keyframes wrongNudge { 20%,60% { transform: translate(-6px,3px); } 40%,80% { transform: translate(6px,3px); } }
+
+        /* ================= SVG TIMER RING ================= */
+        .timer-wrap { display: flex; flex-direction: column; align-items: center; margin: 0 auto 18px; }
+        .timer-ring { position: relative; width: 124px; height: 124px; }
+        .timer-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+        .timer-ring .track { fill: rgba(15,23,42,.65); stroke: rgba(255,255,255,.08); stroke-width: 9; }
+        .timer-ring .arc {
+            fill: none; stroke: #22c55e; stroke-width: 9; stroke-linecap: round;
+            stroke-dasharray: 326.73; stroke-dashoffset: 0;
+            transition: stroke-dashoffset .12s linear;
+        }
+        .timer-ring .timer-num {
+            position: absolute; inset: 0; display: grid; place-items: center;
+            font-size: 42px; font-weight: 800; color: #22c55e;
+            font-variant-numeric: tabular-nums;
+        }
+        .timer-ring.danger { animation: ringPulse .8s ease-in-out infinite; }
+        @keyframes ringPulse { 50% { transform: scale(1.09); } }
+        .live-points { margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--text-muted); min-height: 24px; }
+        .live-points b { color: var(--warning); font-size: 19px; font-variant-numeric: tabular-nums; }
+
+        /* ================= RESULT FX ================= */
+        .float-score {
+            position: fixed; left: 50%; top: 36%; z-index: 600; pointer-events: none;
+            font-size: 60px; font-weight: 800; text-align: center;
+            text-shadow: 0 4px 22px rgba(0,0,0,.65);
+            animation: floatUp 1.7s ease-out forwards;
+        }
+        .float-score.good { color: #4ade80; }
+        .float-score.bad { color: #f87171; }
+        .float-score small { display: block; font-size: 18px; color: #fde68a; margin-top: 2px; }
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translate(-50%, 30px) scale(.6); }
+            15% { opacity: 1; transform: translate(-50%, 0) scale(1.15); }
+            30% { transform: translate(-50%, -8px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -150px) scale(1); }
+        }
+        .shake { animation: shake .5s; }
+        @keyframes shake {
+            10%,90% { transform: translateX(-4px); } 20%,80% { transform: translateX(8px); }
+            30%,50%,70% { transform: translateX(-12px); } 40%,60% { transform: translateX(12px); }
+        }
+
+        /* ================= SUMMARY LEADERBOARD ================= */
+        .summary-overlay {
+            position: fixed; inset: 0; z-index: 400; display: none;
+            justify-content: center; align-items: center; padding: 16px;
+            background: rgba(8,10,18,.78); backdrop-filter: blur(6px);
+        }
+        .summary-overlay.open { display: flex; animation: fadeIn .3s; }
+        .summary-overlay.closing { animation: fadeOut .45s forwards; }
+        .summary-overlay.closing .summary-card { animation: collapse .45s cubic-bezier(.6,0,.4,1) forwards; }
+        .summary-card {
+            width: 100%; max-width: 560px; max-height: 92vh; overflow-x: hidden; overflow-y: auto;
+            background: linear-gradient(180deg, #1c2745 0%, #131a2e 100%);
+            border: 1px solid rgba(255,255,255,.1); border-radius: 24px;
+            padding: 24px 20px 0;
+            box-shadow: 0 30px 80px rgba(0,0,0,.6);
+            transform-origin: top center;
+            animation: dropIn .5s cubic-bezier(.16,1,.3,1);
+        }
+        .summary-sub { text-align: center; color: var(--text-muted); font-size: 13px; margin: -4px 0 18px; }
+        @keyframes dropIn { from { opacity: 0; transform: translateY(-40px) scale(.96); } }
+        @keyframes collapse { to { opacity: 0; transform: translateY(-30px) scaleY(.05); } }
+        @keyframes fadeIn { from { opacity: 0; } }
+        @keyframes fadeOut { to { opacity: 0; } }
+        .rank-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; margin-bottom: 8px; border-radius: 14px;
+            background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.06);
+            opacity: 0; transform: translateX(-44px);
+            animation: rowIn .5s cubic-bezier(.16,1,.3,1) forwards;
+            animation-delay: calc(var(--i) * 130ms + 250ms);
+        }
+        @keyframes rowIn { to { opacity: 1; transform: none; } }
+        .rank-row.me { border-color: var(--accent-cool); background: rgba(56,189,248,.13); }
+        .rank-pos {
+            flex: none; width: 36px; height: 36px; border-radius: 50%;
+            display: grid; place-items: center; font-weight: 800;
+            background: rgba(255,255,255,.1);
+        }
+        .rank-row.r1 .rank-pos { background: linear-gradient(135deg,#fde047,#f59e0b); color: #3b2600; }
+        .rank-row.r2 .rank-pos { background: linear-gradient(135deg,#f1f5f9,#94a3b8); color: #1e293b; }
+        .rank-row.r3 .rank-pos { background: linear-gradient(135deg,#fdba74,#c2410c); color: #2a1000; }
+        .rank-main { flex: 1; min-width: 0; }
+        .rank-top { display: flex; align-items: baseline; gap: 8px; }
+        .rank-name { flex: 1; min-width: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rank-gain { font-size: 12px; font-weight: 700; color: #4ade80; opacity: 0; transform: translateY(5px); transition: all .4s; }
+        .rank-gain.show { opacity: 1; transform: none; }
+        .rank-score { font-weight: 800; font-size: 18px; min-width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
+        .rank-bar { height: 8px; border-radius: 99px; background: rgba(255,255,255,.08); margin-top: 6px; overflow: hidden; }
+        .rank-bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg,#38BDF8,#A855F7); transition: width 1.3s cubic-bezier(.22,1,.36,1); }
+        .rank-row.r1 .rank-bar i { background: linear-gradient(90deg,#f59e0b,#fde047); }
+        .rank-sep { text-align: center; color: var(--text-muted); letter-spacing: 4px; margin: -2px 0 6px; }
+        .summary-countdown { height: 5px; margin: 14px -20px 0; background: rgba(255,255,255,.06); }
+        .summary-countdown i { display: block; height: 100%; background: var(--accent-cool); transform-origin: left; animation: shrink var(--dur, 9s) linear forwards; }
+        @keyframes shrink { to { transform: scaleX(0); } }
+
+        @media (max-width: 420px) {
+            .player-options { grid-template-columns: 1fr; }
+            .option-btn { min-height: 64px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .blob, .timer-ring.danger, .option-btn.correct { animation: none; }
+            .rank-row { animation-duration: .01s; animation-delay: 0s; }
+            .float-score { animation-duration: .8s; }
+        }
+
+        /* MOBILE RESPONSIVE */
         @media (max-width: 640px) {
             .screen { padding: 1.5rem; }
-            h1 { font-size: 24px; } h2 { font-size: 20px; }
+            h1 { font-size: 24px; }
+            h2 { font-size: 20px; }
             .admin-grid { grid-template-columns: 1fr; }
-            .timer-ring-wrap { width: 100px; height: 100px; }
-            .timer-ring-text { font-size: 30px; }
+            .timer-ring { width: 104px; height: 104px; }
+            .timer-ring .timer-num { font-size: 34px; }
             .podium-container { height: 220px; }
-            .option-btn { min-height: 64px; font-size: 14px; padding: 14px 10px; }
         }
-
-        /* ============ OPTION IMAGES (player) ============ */
-        .option-btn .opt-row { display: flex; align-items: center; justify-content: center; gap: 10px; min-width: 0; }
-        .opt-img { display: none; width: 100%; height: 96px; object-fit: cover; border-radius: 10px; background: rgba(0, 0, 0, 0.2); pointer-events: none; }
-        .option-btn.has-img { flex-direction: column; gap: 8px; padding: 10px 10px 12px; }
-        .option-btn.has-img .opt-img { display: block; }
-        .option-btn.has-img .opt-label { text-align: center; }
-        @media (min-width: 641px) { .opt-img { height: 150px; } }
-
-        /* ============ AUTO IMAGE + EDIT MODAL (admin) ============ */
-        .auto-img-box { background: var(--bg-elevated); border-radius: 14px; padding: 10px 14px; margin: 14px 0; }
-        .auto-img-box label { display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text-bright); }
-        .auto-img-box input[type="checkbox"] { width: 22px; height: 22px; margin: 0; padding: 0; flex-shrink: 0; accent-color: var(--accent-cool); }
-        .auto-img-sub { display: none; padding-left: 32px; }
-        .auto-img-box.on .auto-img-sub { display: block; }
-        .auto-img-sub label { font-weight: 500; font-size: 13px; color: var(--text-muted); }
-        .auto-img-hint { font-size: 11px; color: var(--text-muted); margin: 0 0 4px 32px; }
-
-        #edit-modal .modal-content { max-width: 560px; }
-        .ed-label { display: block; font-size: 12px; font-weight: 700; color: var(--accent-cool); margin: 0 0 4px; }
-        .img-slot { display: flex; gap: 10px; align-items: stretch; margin-bottom: 14px; padding: 10px; border-radius: 14px; background: var(--bg-elevated); }
-        .img-thumb { position: relative; width: 84px; min-height: 84px; flex-shrink: 0; border-radius: 10px; overflow: hidden; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 28px; }
-        .img-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
-        .img-ctrl { flex: 1; min-width: 0; }
-        .img-ctrl input { padding: 10px 12px; margin-bottom: 8px; font-size: 16px; }
-        .img-btns { display: flex; gap: 8px; }
-        .img-btns button { padding: 10px 8px; font-size: 13px; min-height: 44px; }
-        .img-btns .img-next { flex: 1; }
-        .img-btns .img-clear { width: 48px; flex: none; }
-        .img-info { display: block; font-size: 11px; color: var(--text-muted); margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .opt-edit-head { font-size: 13px; font-weight: 800; margin: 4px 0 6px; }
-        #edit-modal textarea, #edit-modal input[type="text"], #edit-modal input[type="number"], #edit-modal select { font-size: 16px; }
-        .list-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-        .list-actions button { width: auto; padding: 8px 14px; font-size: 13px; min-height: 40px; }
-
-        /* ============ SETTINGS (GEAR + BOTTOM SHEET) ============ */
-        #settings-btn {
-            position: fixed; z-index: 400;
-            top: calc(10px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px));
-            width: 48px; height: 48px; padding: 0; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            background: var(--bg-card); color: var(--text-bright);
-            border: 1px solid rgba(128, 128, 160, 0.35); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-        }
-        #settings-btn svg { width: 26px; height: 26px; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        #settings-btn:hover { border-color: var(--accent-cool); box-shadow: 0 6px 18px rgba(var(--accent-rgb), 0.35); }
-        #settings-btn:hover svg, #settings-btn.open svg { transform: rotate(90deg); }
-
-        html.sheet-open, html.sheet-open body { overflow: hidden; }
-        #settings-sheet { align-items: flex-end; z-index: 700; }
-        #settings-sheet .sheet {
-            width: 100%; max-width: 520px; max-height: 90vh; max-height: 90dvh; overflow-y: auto;
-            -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
-            background: var(--bg-card); color: var(--text-bright);
-            border: 1px solid rgba(128, 128, 160, 0.25); border-bottom: none;
-            border-radius: 26px 26px 0 0; padding: 8px 20px calc(24px + env(safe-area-inset-bottom, 0px));
-            box-shadow: 0 -12px 50px rgba(0, 0, 0, 0.5); animation: sheetUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .sheet-grab { width: 46px; height: 5px; border-radius: 3px; background: rgba(128, 128, 160, 0.45); margin: 6px auto 12px; }
-        .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .sheet-title { font-size: 21px; font-weight: 800; }
-        .sheet-close { width: 44px; height: 44px; padding: 0; border-radius: 50%; background: var(--bg-elevated); color: var(--text-bright); font-size: 18px; box-shadow: none; }
-        .sheet-close:hover { box-shadow: none; }
-        .set-section { padding: 16px 0; border-top: 1px solid rgba(128, 128, 160, 0.2); }
-        .set-section:first-of-type { border-top: none; }
-        .set-label { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; }
-        .set-label b { color: var(--text-bright); }
-
-        .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg-elevated); padding: 5px; border-radius: 16px; }
-        .seg-btn { min-height: 48px; padding: 10px; background: transparent; color: var(--text-muted); border-radius: 12px; font-size: 15px; box-shadow: none; }
-        .seg-btn:hover { transform: none; box-shadow: none; }
-        .seg-btn.active { background: linear-gradient(135deg, var(--accent-cool) 0%, var(--accent-2) 100%); color: var(--on-accent); }
-
-        #swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 12px; }
-        .swatch { aspect-ratio: 1; min-height: 46px; width: 100%; padding: 0; border-radius: 50%; border: 2px solid transparent; box-shadow: none; }
-        .swatch:hover { transform: scale(1.08); box-shadow: none; }
-        .swatch.active { outline: 3px solid var(--text-bright); outline-offset: 3px; }
-        .custom-swatch {
-            position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer;
-            aspect-ratio: 1; min-height: 46px; border-radius: 50%; color: #fff; font-size: 24px; font-weight: 800;
-            background: conic-gradient(#ff3b5c, #ffd60a, #39ff88, #00e5ff, #3b82f6, #b14eff, #ff3b5c);
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-        }
-        .custom-swatch.active { outline: 3px solid var(--text-bright); outline-offset: 3px; }
-        .custom-swatch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; }
-
-        .set-row-btn { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; margin-bottom: 12px; background: var(--bg-elevated); color: var(--text-bright); border: 1px solid rgba(128, 128, 160, 0.25); box-shadow: none; }
-        .set-row-btn:hover { box-shadow: none; border-color: var(--accent-cool); }
-        #settings-sheet input[type="password"] { font-size: 16px; min-height: 50px; }
-        #settings-sheet button.danger, #settings-sheet button.success { min-height: 50px; }
-
-        @media (min-width: 640px) {
-            #settings-sheet { align-items: center; }
-            #settings-sheet .sheet { border-radius: 26px; border-bottom: 1px solid rgba(128, 128, 160, 0.25); padding-bottom: 24px; animation: scaleIn 0.25s; }
-            .sheet-grab { display: none; }
-        }
-
-        /* ============ LIGHT MODE ============ */
-        html { color-scheme: dark; }
-        html[data-mode="light"] {
-            color-scheme: light;
-            --bg-dark: #EEF1FF; --bg-dark2: #F6F2FF; --bg-card: #FFFFFF; --bg-elevated: #EEF0FB;
-            --text-bright: #1E1B3A; --text-muted: #6A6590;
-            --gold: #B7860B; --success: #0E9F5B; --warning: #D97706; --danger: #E11D48;
-        }
-        html[data-mode="light"] body { background: linear-gradient(160deg, var(--bg-dark) 0%, var(--bg-dark2) 45%, #E9E4FF 100%); }
-        html[data-mode="light"] .bg-blob { opacity: 0.18; }
-        html[data-mode="light"] .screen { background: rgba(255, 255, 255, 0.9); border-color: rgba(80, 60, 140, 0.12); box-shadow: 0 20px 55px rgba(60, 40, 120, 0.18); }
-        html[data-mode="light"] h1, html[data-mode="light"] h2, html[data-mode="light"] h3 {
-            background-image: linear-gradient(135deg, var(--accent-2) 0%, var(--purple) 60%, var(--accent-warm) 100%);
-            -webkit-background-clip: text; background-clip: text;
-        }
-        html[data-mode="light"] .modal-overlay { background: rgba(30, 27, 58, 0.45); }
-        html[data-mode="light"] .modal-content, html[data-mode="light"] .card, html[data-mode="light"] .list-item,
-        html[data-mode="light"] .rank-row, html[data-mode="light"] .auth-tabs { border-color: rgba(80, 60, 140, 0.14); box-shadow: 0 4px 14px rgba(60, 40, 120, 0.1); }
-        html[data-mode="light"] input, html[data-mode="light"] select, html[data-mode="light"] textarea { border-color: rgba(80, 60, 140, 0.2); }
-        html[data-mode="light"] [style*="rgba(255, 255, 255"] { border-color: rgba(80, 60, 140, 0.14) !important; }
-        html[data-mode="light"] [style*="color: var(--accent-cool)"] { color: var(--accent-2) !important; }
-        html[data-mode="light"] .auth-hint a, html[data-mode="light"] .prepare-banner { color: var(--accent-2); }
-        html[data-mode="light"] .auth-tab.active, html[data-mode="light"] .tab-btn.active { color: var(--on-accent); }
-        html[data-mode="light"] #player-question-text { color: var(--text-bright); -webkit-text-fill-color: var(--text-bright); text-shadow: none; }
-        html[data-mode="light"] .timer-ring-bg, html[data-mode="light"] .rank-bar-track { stroke: rgba(80, 60, 140, 0.14); background: rgba(80, 60, 140, 0.12); }
-        html[data-mode="light"] .timer-ring-bg { background: none; }
-        html[data-mode="light"] .rank-gain-zero { background: rgba(80, 60, 140, 0.08); }
-        html[data-mode="light"] .tab-container { border-color: rgba(80, 60, 140, 0.12); }
-        html[data-mode="light"] #summary-list::-webkit-scrollbar-thumb { background: rgba(80, 60, 140, 0.25); }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="bg-blob bg-blob-1"></div>
-    <div class="bg-blob bg-blob-2"></div>
-    <div class="bg-blob bg-blob-3"></div>
-    <div class="bg-blob bg-blob-4"></div>
+    <div class="bg-blobs" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div></div>
 
     <audio id="snd-tick" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
     <audio id="snd-correct" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
@@ -609,145 +632,13 @@
 
     <div id="custom-toast">ข้อความแจ้งเตือน</div>
 
-    <!-- SETTINGS: GEAR BUTTON + BOTTOM SHEET -->
-    <button id="settings-btn" title="ตั้งค่า" aria-label="ตั้งค่า">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
-
-    <div id="settings-sheet" class="modal-overlay">
-        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
-            <div class="sheet-grab"></div>
-            <div class="sheet-head">
-                <span class="sheet-title" id="sheet-title">⚙️ ตั้งค่า</span>
-                <button class="sheet-close" id="sheet-close" aria-label="ปิด">✕</button>
-            </div>
-
-            <div class="set-section">
-                <p class="set-label">โหมดการแสดงผล</p>
-                <div class="seg">
-                    <button class="seg-btn" data-mode="dark">🌙 โหมดมืด</button>
-                    <button class="seg-btn" data-mode="light">☀️ โหมดสว่าง</button>
-                </div>
-            </div>
-
-            <div class="set-section">
-                <p class="set-label">สีธีม</p>
-                <div id="swatches">
-                    <label class="custom-swatch" id="custom-swatch" title="เลือกสีเอง">+<input type="color" id="custom-color-input" value="#00e5ff" aria-label="เลือกสีเอง"></label>
-                </div>
-            </div>
-
-            <div class="set-section" id="account-section" style="display:none;">
-                <p class="set-label">บัญชี: <b id="set-user-name"></b></p>
-                <button class="set-row-btn" id="toggle-pw-btn"><span>🔑</span><span id="pw-btn-text">เปลี่ยนรหัสผ่าน</span></button>
-
-                <div id="pw-wrap" style="display:none;">
-                    <div id="pw-form">
-                        <input type="password" id="cp-old" placeholder="รหัสผ่านปัจจุบัน" autocomplete="current-password">
-                        <input type="password" id="cp-new" placeholder="รหัสผ่านใหม่ (อย่างน้อย 4 ตัวอักษร)" autocomplete="new-password">
-                        <input type="password" id="cp-new2" placeholder="ยืนยันรหัสผ่านใหม่" autocomplete="new-password">
-                    </div>
-                    <div id="pin-form" style="display:none;">
-                        <input type="password" id="pin-old" inputmode="numeric" maxlength="6" placeholder="PIN ปัจจุบัน">
-                        <input type="password" id="pin-new" inputmode="numeric" maxlength="6" placeholder="PIN ใหม่ (ตัวเลข 4-6 หลัก)">
-                        <input type="password" id="pin-new2" inputmode="numeric" maxlength="6" placeholder="ยืนยัน PIN ใหม่">
-                    </div>
-                    <p class="auth-error" id="settings-error"></p>
-                    <button id="settings-save" class="success" style="margin-bottom: 12px;">💾 บันทึก</button>
-                </div>
-
-                <button id="logout-btn" class="danger">🚪 ออกจากระบบ</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- EDIT QUESTION MODAL -->
-    <div id="edit-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2>✏️ แก้ไขคำถาม</h2>
-            <label class="ed-label">คำถาม</label>
-            <textarea id="ed-text" rows="2" placeholder="พิมพ์คำถามที่นี่..."></textarea>
-            <label class="ed-label">รูปประกอบโจทย์</label>
-            <div class="img-slot" data-slot="q">
-                <div class="img-thumb"><span class="ph">🖼️</span><img alt=""></div>
-                <div class="img-ctrl">
-                    <input type="text" class="img-query" id="ed-imgq" placeholder="คำค้นหารูป (เว้นว่าง = ใช้ข้อความคำถาม)"><input type="text" class="img-url" placeholder="URL รูป (เว้นว่างได้)" inputmode="url">
-                    <div class="img-btns">
-                        <button class="img-next purple" type="button">🔍 หาภาพ</button>
-                        <button class="img-clear danger" type="button" aria-label="ลบรูป">🗑️</button>
-                    </div>
-                    <span class="img-info"></span>
-                </div>
-            </div>
-            
-            <p class="opt-edit-head" style="color: var(--opt-a);">▲ ตัวเลือกที่ 1</p>
-            <input type="text" id="ed-opt1" placeholder="ตัวเลือกที่ 1">
-            <div class="img-slot" data-slot="1">
-                <div class="img-thumb"><span class="ph">🖼️</span><img alt=""></div>
-                <div class="img-ctrl">
-                    <input type="text" class="img-url" placeholder="URL รูป (เว้นว่างได้)" inputmode="url">
-                    <div class="img-btns">
-                        <button class="img-next purple" type="button">🔍 หาภาพ</button>
-                        <button class="img-clear danger" type="button" aria-label="ลบรูป">🗑️</button>
-                    </div>
-                    <span class="img-info"></span>
-                </div>
-            </div>
-            <p class="opt-edit-head" style="color: var(--opt-b);">◆ ตัวเลือกที่ 2</p>
-            <input type="text" id="ed-opt2" placeholder="ตัวเลือกที่ 2">
-            <div class="img-slot" data-slot="2">
-                <div class="img-thumb"><span class="ph">🖼️</span><img alt=""></div>
-                <div class="img-ctrl">
-                    <input type="text" class="img-url" placeholder="URL รูป (เว้นว่างได้)" inputmode="url">
-                    <div class="img-btns">
-                        <button class="img-next purple" type="button">🔍 หาภาพ</button>
-                        <button class="img-clear danger" type="button" aria-label="ลบรูป">🗑️</button>
-                    </div>
-                    <span class="img-info"></span>
-                </div>
-            </div>
-            <p class="opt-edit-head" style="color: var(--opt-c);">● ตัวเลือกที่ 3</p>
-            <input type="text" id="ed-opt3" placeholder="ตัวเลือกที่ 3">
-            <div class="img-slot" data-slot="3">
-                <div class="img-thumb"><span class="ph">🖼️</span><img alt=""></div>
-                <div class="img-ctrl">
-                    <input type="text" class="img-url" placeholder="URL รูป (เว้นว่างได้)" inputmode="url">
-                    <div class="img-btns">
-                        <button class="img-next purple" type="button">🔍 หาภาพ</button>
-                        <button class="img-clear danger" type="button" aria-label="ลบรูป">🗑️</button>
-                    </div>
-                    <span class="img-info"></span>
-                </div>
-            </div>
-            <p class="opt-edit-head" style="color: var(--opt-d);">■ ตัวเลือกที่ 4</p>
-            <input type="text" id="ed-opt4" placeholder="ตัวเลือกที่ 4">
-            <div class="img-slot" data-slot="4">
-                <div class="img-thumb"><span class="ph">🖼️</span><img alt=""></div>
-                <div class="img-ctrl">
-                    <input type="text" class="img-url" placeholder="URL รูป (เว้นว่างได้)" inputmode="url">
-                    <div class="img-btns">
-                        <button class="img-next purple" type="button">🔍 หาภาพ</button>
-                        <button class="img-clear danger" type="button" aria-label="ลบรูป">🗑️</button>
-                    </div>
-                    <span class="img-info"></span>
-                </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 6px;">
-                <div>
-                    <label class="ed-label">เฉลย</label>
-                    <select id="ed-correct" style="margin-bottom: 0;">
-                        <option value="0">-- เลือก --</option><option value="1">ข้อ 1</option><option value="2">ข้อ 2</option><option value="3">ข้อ 3</option><option value="4">ข้อ 4</option>
-                    </select>
-                </div>
-                <div><label class="ed-label">คะแนนเต็ม</label><input type="number" id="ed-points" min="1" style="margin-bottom: 0;"></div>
-                <div><label class="ed-label">เวลา (วิ)</label><input type="number" id="ed-time" min="5" style="margin-bottom: 0;"></div>
-            </div>
-            <button id="ed-auto-all" class="purple" type="button" style="margin: 16px 0 10px;">🪄 หารูปที่ยังว่างให้อัตโนมัติ</button>
-            <p class="auth-error" id="ed-error"></p>
-            <div style="display: flex; gap: 10px;">
-                <button id="ed-cancel" class="danger" type="button">ยกเลิก</button>
-                <button id="ed-save" class="success" type="button">💾 บันทึก</button>
-            </div>
+    <!-- SUMMARY LEADERBOARD (auto shown after reveal) -->
+    <div id="summary-overlay" class="summary-overlay">
+        <div class="summary-card">
+            <h2 style="font-size: 26px;">🏅 อันดับคะแนน</h2>
+            <p class="summary-sub" id="summary-sub"></p>
+            <div id="summary-rows"></div>
+            <div class="summary-countdown" id="summary-countdown"></div>
         </div>
     </div>
 
@@ -788,7 +679,8 @@
 [
   {
     "text": "คำถาม?",
-    "img": "URL (เว้นว่างได้)",
+    "img": "URL (เว้นว่างได้ ถ้าไม่จำเป็นต้องมีรูป)",
+    "imgType": "auto",
     "opt1": "ตัวเลือก 1",
     "opt2": "ตัวเลือก 2",
     "opt3": "ตัวเลือก 3",
@@ -797,16 +689,15 @@
     "points": 1000,
     "timeLimit": 20
   }
-]' style="font-family: 'Courier New', monospace; font-size: 13px;"></textarea>
-            </div>
+]
 
-            <div class="auto-img-box" id="imp-box">
-                <label><input type="checkbox" id="imp-auto"> 🖼️ หารูปให้อัตโนมัติ</label>
-                <div class="auto-img-sub">
-                    <label><input type="checkbox" id="imp-auto-q" checked> รูปประกอบโจทย์</label>
-                    <label><input type="checkbox" id="imp-auto-opt" checked> รูปในตัวเลือก (ชื่อคน/ตัวละคร/สิ่งของ)</label>
-                    <p class="auto-img-hint">ไม่แทนที่รูปที่ใส่ไว้แล้ว · ถ้าภาพผิด กด ✏️ แก้ไข แล้วกด "เปลี่ยนภาพ"</p>
-                </div>
+imgType เลือกได้: auto (ให้ระบบเดา) / logo (ตราสัญลักษณ์ โชว์เต็ม) / person (รูปคน กันหน้าโดนตัด) / scene (ภาพทั่วไป)
+ถ้าโจทย์เป็นคำถามสถิติ/ตัวเลข ไม่ต้องใส่ img เลย' style="font-family: 'Courier New', monospace; font-size: 13px;"></textarea>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: -8px; line-height: 1.6;">
+                    💡 <b>กติกาเลือกรูป:</b> ถามชื่อทีม/สโมสร → หา<b>โลโก้</b>เท่านั้น (ห้ามภาพสนาม) &nbsp;|&nbsp;
+                    ถามเกี่ยวกับคน → ต้องเห็น<b>หน้าไม่ถูกครอปทิ้ง</b> &nbsp;|&nbsp;
+                    คำถามสถิติ/ตัวเลข → <b>ไม่ต้องมีรูปเลย</b>
+                </p>
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -817,36 +708,17 @@
     </div>
 
     <div class="app-container">
-        <!-- AUTH SCREEN (LOGIN / REGISTER) -->
+
+        <!-- LOGIN SCREEN -->
         <div id="login-screen" class="screen active">
-            <div style="text-align: center; margin-bottom: 26px;">
+            <div style="text-align: center; margin-bottom: 30px;">
                 <div style="font-size: 64px; margin-bottom: 16px;">🚀</div>
-                <h1 style="font-size: 32px;">เกมตอบคำถาม</h1>
-                <p style="color: var(--text-muted); margin-top: 8px;">เกมตอบคำถามแบบเรียลไทม์ ยิ่งเร็วยิ่งได้เยอะ!</p>
+                <h1 style="font-size: 32px;">Quiz Realtime</h1>
+                <p style="color: var(--text-muted); margin-top: 8px;">เกมตอบคำถามแบบเรียลไทม์</p>
             </div>
 
-            <div class="auth-tabs">
-                <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">🔑 เข้าสู่ระบบ</button>
-                <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">✨ สมัครสมาชิก</button>
-            </div>
-
-            <div id="auth-login-form">
-                <input type="text" id="login-name" placeholder="ชื่อผู้ใช้" autocomplete="username">
-                <input type="password" id="login-pass" placeholder="รหัสผ่าน" autocomplete="current-password">
-                <p class="auth-error" id="login-error"></p>
-                <button id="login-btn">🎮 เข้าสู่ระบบ / เข้าร่วมเกม</button>
-                <p class="auth-hint">ยังไม่มีบัญชี? <a onclick="switchAuthTab('register')">สมัครสมาชิกเลย</a></p>
-            </div>
-
-            <div id="auth-register-form" style="display:none;">
-                <input type="text" id="reg-name" placeholder="ตั้งชื่อผู้ใช้ (ใช้เข้าเกม)" autocomplete="off">
-                <input type="password" id="reg-pass" placeholder="ตั้งรหัสผ่าน" autocomplete="new-password">
-                <input type="password" id="reg-pass2" placeholder="ยืนยันรหัสผ่าน" autocomplete="new-password">
-                <p class="auth-error" id="reg-error"></p>
-                <button id="register-btn" class="success">✨ สมัครสมาชิก</button>
-                <p class="auth-hint">มีบัญชีอยู่แล้ว? <a onclick="switchAuthTab('login')">เข้าสู่ระบบ</a></p>
-            </div>
-
+            <input type="text" id="username-input" placeholder="พิมพ์ชื่อของคุณที่นี่..." autocomplete="off">
+            <button id="join-btn">เข้าร่วมเกม</button>
             <button id="goto-admin-btn" class="purple" style="display: none; margin-top: 15px;">
                 🛠️ เข้าสู่ระบบจัดการ (Admin)
             </button>
@@ -857,13 +729,13 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
                 <div>
                     <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">ผู้เล่น</p>
-                    <h3 style="margin: 0; font-size: 20px; -webkit-text-fill-color: var(--text-bright); background: none;" id="display-player-name"></h3>
+                    <h3 style="margin: 0; font-size: 20px;" id="display-player-name"></h3>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <div id="streak-badge" class="streak-badge">🔥 คอมโบ x2</div>
                     <div style="text-align: right;">
                         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">คะแนน</p>
-                        <h3 style="margin: 0; color: var(--success); font-size: 24px; -webkit-text-fill-color: var(--success); background: none;" id="display-player-score">0</h3>
+                        <h3 style="margin: 0; color: var(--success); font-size: 24px;" id="display-player-score">0</h3>
                     </div>
                 </div>
             </div>
@@ -875,25 +747,24 @@
             </div>
 
             <div id="question-area" style="display: none;">
-                <div class="timer-ring-wrap" id="player-timer-wrap">
-                    <svg viewBox="0 0 120 120" class="timer-ring-svg">
-                        <circle class="timer-ring-bg" cx="60" cy="60" r="50"></circle>
-                        <circle id="timer-ring-progress" class="timer-ring-progress" cx="60" cy="60" r="50"></circle>
-                    </svg>
-                    <div id="player-timer" class="timer-ring-text">20</div>
+                <div class="timer-wrap">
+                    <div id="timer-ring" class="timer-ring">
+                        <svg viewBox="0 0 120 120" aria-hidden="true">
+                            <circle class="track" cx="60" cy="60" r="52"/>
+                            <circle id="timer-arc" class="arc" cx="60" cy="60" r="52"/>
+                        </svg>
+                        <div id="player-timer" class="timer-num">20</div>
+                    </div>
+                    <div id="live-points" class="live-points"></div>
                 </div>
-                <p class="potential-points">⚡ ตอบตอนนี้ได้<span id="potential-points-val">1000</span> คะแนน</p>
                 <h2 id="player-question-text" style="margin-bottom: 8px; font-size: 20px;">คำถาม?</h2>
-                <p id="player-question-points" style="text-align: center; color: var(--gold); font-weight: 700; margin-bottom: 20px; font-size: 15px; background: none; -webkit-text-fill-color: var(--gold);">(1000 คะแนนเต็ม)</p>
-                <img id="player-question-img" class="question-image" src="" alt="" onerror="this.style.display='none'">
-                <div id="prepare-banner" class="prepare-banner" style="display: none;">
-                    เตรียมตัวให้พร้อม!<span class="countdown" id="prepare-countdown">3</span>
-                </div>
-                <div class="options-grid" id="player-options-grid" style="display: none;">
-                    <button class="option-btn opt-a" onclick="submitAnswer(1)" id="p-opt-1"><img class="opt-img" id="p-opt-1-img" alt="" onerror="this.parentNode.classList.remove('has-img')"><span class="opt-row"><span class="opt-shape">▲</span><span class="opt-label" id="p-opt-1-label">ตัวเลือก 1</span></span></button>
-                    <button class="option-btn opt-b" onclick="submitAnswer(2)" id="p-opt-2"><img class="opt-img" id="p-opt-2-img" alt="" onerror="this.parentNode.classList.remove('has-img')"><span class="opt-row"><span class="opt-shape">◆</span><span class="opt-label" id="p-opt-2-label">ตัวเลือก 2</span></span></button>
-                    <button class="option-btn opt-c" onclick="submitAnswer(3)" id="p-opt-3"><img class="opt-img" id="p-opt-3-img" alt="" onerror="this.parentNode.classList.remove('has-img')"><span class="opt-row"><span class="opt-shape">●</span><span class="opt-label" id="p-opt-3-label">ตัวเลือก 3</span></span></button>
-                    <button class="option-btn opt-d" onclick="submitAnswer(4)" id="p-opt-4"><img class="opt-img" id="p-opt-4-img" alt="" onerror="this.parentNode.classList.remove('has-img')"><span class="opt-row"><span class="opt-shape">■</span><span class="opt-label" id="p-opt-4-label">ตัวเลือก 4</span></span></button>
+                <p id="player-question-points" style="text-align: center; color: var(--warning); font-weight: 700; margin-bottom: 20px; font-size: 16px;">(100 คะแนน)</p>
+                <img id="player-question-img" class="question-image" src="" alt="">
+                <div class="options-grid player-options">
+                    <button class="option-btn opt-1" onclick="submitAnswer(1)" id="p-opt-1"><span class="opt-shape">▲</span><span class="opt-label" id="p-opt-1-text">ตัวเลือก 1</span></button>
+                    <button class="option-btn opt-2" onclick="submitAnswer(2)" id="p-opt-2"><span class="opt-shape">◆</span><span class="opt-label" id="p-opt-2-text">ตัวเลือก 2</span></button>
+                    <button class="option-btn opt-3" onclick="submitAnswer(3)" id="p-opt-3"><span class="opt-shape">●</span><span class="opt-label" id="p-opt-3-text">ตัวเลือก 3</span></button>
+                    <button class="option-btn opt-4" onclick="submitAnswer(4)" id="p-opt-4"><span class="opt-shape">■</span><span class="opt-label" id="p-opt-4-text">ตัวเลือก 4</span></button>
                 </div>
                 <div id="answer-result-text" style="text-align: center; margin-top: 20px; font-weight: 700; font-size: 19px; display: none;"></div>
             </div>
@@ -907,14 +778,26 @@
             </div>
 
             <div class="admin-grid">
+                <!-- LEFT COLUMN: CREATE & IMPORT -->
                 <div class="card">
                     <h3 style="font-size: 18px;">➕ จัดการคำถาม</h3>
-                    <button id="open-import-modal-btn" class="purple" style="margin-bottom: 20px;">📥 นำเข้าจาก JSON</button>
+
+                    <button id="open-import-modal-btn" class="purple" style="margin-bottom: 20px;">
+                        📥 นำเข้าจาก JSON
+                    </button>
 
                     <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 20px; margin-top: 10px;">
                         <h4 style="color: var(--accent-cool); margin-bottom: 15px; font-size: 15px;">สร้างคำถามใหม่</h4>
                         <textarea id="q-text" placeholder="พิมพ์คำถามที่นี่..." rows="2"></textarea>
                         <input type="text" id="q-img" placeholder="URL รูปภาพ (เว้นว่างได้ถ้าไม่มี)">
+                        <select id="q-img-type" class="img-type-select">
+                            <option value="auto">🤖 ออโต้ (ให้ระบบเดาให้)</option>
+                            <option value="logo">🛡️ โลโก้/ตราสัญลักษณ์ (โชว์เต็ม ไม่ครอป)</option>
+                            <option value="person">🧑 รูปคน/นักกีฬา (กันหน้าโดนตัด)</option>
+                            <option value="scene">🖼️ ภาพทั่วไป/บรรยากาศ</option>
+                        </select>
+                        <span class="img-type-hint" id="q-img-hint">ไม่ใส่ URL รูป = ไม่ต้องมีรูปเลย เหมาะกับคำถามสถิติ/ตัวเลข</span>
+                        <img id="q-img-preview" class="question-image img-preview-box" src="" alt="" style="width:140px;height:100px;">
                         <div class="options-grid">
                             <input type="text" id="q-opt1" placeholder="ตัวเลือกที่ 1">
                             <input type="text" id="q-opt2" placeholder="ตัวเลือกที่ 2">
@@ -922,7 +805,7 @@
                             <input type="text" id="q-opt4" placeholder="ตัวเลือกที่ 4">
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 6px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 15px;">
                             <div>
                                 <label style="font-size: 12px; color: var(--accent-cool); display: block; margin-bottom: 4px;">เฉลย</label>
                                 <select id="q-correct" style="margin-bottom: 0;">
@@ -942,21 +825,12 @@
                                 <input type="number" id="q-time" value="20" min="5" style="margin-bottom: 0;">
                             </div>
                         </div>
-                        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px;">⚡ ตอบเร็ว = ได้คะแนนเต็ม / ตอบช้าใกล้หมดเวลา = เหลือประมาณ 50% ของคะแนนเต็ม</p>
-
-                        <div class="auto-img-box" id="q-box">
-                <label><input type="checkbox" id="q-auto"> 🖼️ หารูปให้อัตโนมัติ</label>
-                <div class="auto-img-sub">
-                    <label><input type="checkbox" id="q-auto-q" checked> รูปประกอบโจทย์</label>
-                    <label><input type="checkbox" id="q-auto-opt" checked> รูปในตัวเลือก (ชื่อคน/ตัวละคร/สิ่งของ)</label>
-                    <p class="auto-img-hint">ไม่แทนที่รูปที่ใส่ไว้แล้ว · ถ้าภาพผิด กด ✏️ แก้ไข แล้วกด "เปลี่ยนภาพ"</p>
-                </div>
-            </div>
 
                         <button id="add-question-btn" class="success">บันทึกลงคิว</button>
                     </div>
                 </div>
 
+                <!-- RIGHT COLUMN: GAME CONTROL -->
                 <div class="card">
                     <h3 style="font-size: 18px;">🎮 ควบคุมเกม</h3>
 
@@ -965,10 +839,9 @@
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-                        <button id="show-answer-btn" class="warning" disabled>🏁 เฉลยเลย</button>
+                        <button id="show-answer-btn" class="warning" disabled>🏁 เฉลย</button>
                         <button id="clear-current-q-btn" class="danger">ซ่อนคำถาม</button>
                     </div>
-                    <p style="font-size: 11px; color: var(--text-muted); margin: -6px 0 16px; text-align: center;">⏱️ ระบบจะเฉลย + โชว์กระดานสรุปคะแนนให้อัตโนมัติเมื่อหมดเวลา ไม่ต้องกดเอง</p>
                     <button id="trigger-podium-btn" class="purple" style="margin-bottom: 24px;">🏆 จบเกม & ประกาศผล</button>
 
                     <h4 style="color: var(--accent-cool); margin-bottom: 12px; font-size: 15px;">คิวคำถาม</h4>
@@ -986,16 +859,6 @@
             </div>
         </div>
 
-        <!-- ROUND SUMMARY SCREEN -->
-        <div id="summary-screen" class="screen">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="font-size: 56px; margin-bottom: 10px;">📊</div>
-                <h1 style="font-size: 26px;">สรุปคะแนนรอบนี้</h1>
-                <p style="color: var(--text-muted); margin-top: 4px; font-size: 13px;">กำลังไปข้อถัดไป...</p>
-            </div>
-            <div id="summary-list"></div>
-        </div>
-
         <!-- PODIUM SCREEN -->
         <div id="podium-screen" class="screen">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -1003,7 +866,9 @@
                 <h1 style="font-size: 32px;">สรุปผลคะแนน</h1>
                 <p style="color: var(--text-muted); margin-top: 8px;">ขอแสดงความยินดีกับผู้ชนะ!</p>
             </div>
+
             <div class="podium-container" id="podium-container"></div>
+
             <div style="text-align: center; margin-top: 50px;">
                 <button id="back-to-lobby-btn" style="width: auto; padding: 12px 40px;">กลับสู่หน้ารอ</button>
             </div>
@@ -1013,7 +878,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push, update, remove, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, set, onValue, push, update, remove, get, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAkZC9J3CNojWWCvkKlhZnR7GYiqsW5o2Q",
@@ -1028,15 +893,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // ================= SCORING TUNING =================
-        const SPEED_MIN_FACTOR = 0.5;
-        const COMBO_BASE_BONUS = 0.10;
-        const COMBO_STEP_BONUS = 0.025;
-        const COMBO_MAX_BONUS = 0.20;
-        const REVEAL_TO_SUMMARY_MS = 1500;
-        const SUMMARY_DURATION_MS = 6000;
-        const PREPARE_DURATION_MS = 3000;
-
         // ================= STATE =================
         let currentUser = localStorage.getItem('quiz_username') || '';
         let currentScore = 0;
@@ -1045,48 +901,26 @@
         let activeQuestionId = null;
         let hasAnsweredCurrent = false;
         let mySelectedOption = null;
-        let myEarnedBase = 0;
-        let myBonus = 0;
-        let myAnsweredAt = null;
-        let scoreAppliedFor = null;
         let timerInterval = null;
         let isPodiumActive = false;
-        let isSummaryActive = false;
         let importedJsonData = null;
-
-        // เชื่อมโยงเวลาเครื่องกับเซิร์ฟเวอร์เพื่อให้เวลาตรงกันตลอด
-        let serverOffset = 0;
-        onValue(ref(db, '.info/serverTimeOffset'), (snap) => {
-            serverOffset = snap.val() || 0;
-        });
-        const getNow = () => Date.now() + serverOffset;
-
-        let liveCurrentState = null;
-        let liveSummaryState = null;
-        let preparePhaseActive = false;
-        let prepareInterval = null;
-        let autoRevealedFor = null;
-        let summaryShownFor = null;
-        let summaryHiddenFor = null;
-        let autoAdvancedFor = null;
-        let gameStateListenerStarted = false;
-        let autoEngineStarted = false;
+        let currentQ = null;          // ข้อมูลคำถามที่กำลังเล่น (ฝั่งผู้เล่น)
+        let revealedFor = null;       // questionId ที่เล่นเอฟเฟกต์เฉลยไปแล้ว
+        let myEarned = null;          // รายละเอียดคะแนนที่ได้ในข้อนี้
 
         // ================= UI HELPERS =================
         const showToast = (msg, type = 'normal') => {
             const toast = document.getElementById('custom-toast');
             toast.textContent = msg;
-            if(type === 'error') toast.style.background = 'linear-gradient(135deg, var(--danger) 0%, #b91c3c 100%)';
+            if(type === 'error') toast.style.background = 'linear-gradient(135deg, var(--danger) 0%, #dc2626 100%)';
             else if(type === 'success') toast.style.background = 'linear-gradient(135deg, var(--success) 0%, #059669 100%)';
-            else if(type === 'warning') toast.style.background = 'linear-gradient(135deg, var(--warning) 0%, #c2620a 100%)';
+            else if(type === 'warning') toast.style.background = 'linear-gradient(135deg, var(--warning) 0%, #d97706 100%)';
             else toast.style.background = 'var(--bg-elevated)';
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3500);
         };
 
         const switchScreen = (screenId) => {
-            // กันไม่ให้ listener ที่ค้างอยู่ดึงคนที่ออกจากระบบไปหน้าเกม
-            if(!currentUser && !isAdmin && screenId !== 'login-screen') return;
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         };
@@ -1099,44 +933,248 @@
             } catch(e){}
         };
 
-        const shakeScreen = (screenId) => {
-            const el = document.getElementById(screenId);
-            el.classList.add('shake');
-            setTimeout(() => el.classList.remove('shake'), 400);
-        };
+        // ================= SCORING / TIMING CONFIG =================
+        const DEFAULT_POINTS = 1000;
+        const MIN_SPEED_RATIO = 0.5;     // ตอบวินาทีสุดท้ายได้ 50% ของคะแนนเต็ม
+        const COMBO_START_PCT = 10;      // คอมโบครั้งที่ 2 = +10%
+        const COMBO_STEP_PCT = 2;        // ทุกครั้งที่คอมโบเพิ่ม +2%
+        const COMBO_MAX_PCT = 20;        // สูงสุด +20%
+        const REVEAL_GRACE_MS = 1500;    // รอคำตอบท้ายๆ ก่อนเฉลย
+        const REVEAL_TO_SUMMARY_MS = 3500; // เฉลยค้างไว้ก่อนขึ้นกระดานสรุป
+        const SUMMARY_MS = 9000;         // กระดานสรุปค้างไว้ก่อนหุบเอง
+        const RING_C = 2 * Math.PI * 52;
 
-        const miniConfetti = () => {
-            try {
-                confetti({ particleCount: 50, spread: 75, origin: { y: 0.55 }, colors: ['#00E5FF','#FF2E9A','#FFD60A','#22D37A'] });
-            } catch(e){}
-        };
+        // ================= SMART IMAGE FIT (AUTO-CROP ENGINE) =================
+        // ตัดสินใจว่าภาพควรแสดงผลแบบไหน เพื่อไม่ให้โลโก้โดนครอปเป็นสี่เหลี่ยม
+        // และไม่ให้รูปคนโดนตัดหัว/หน้า โดยดูจากสัดส่วนภาพจริง (naturalWidth/Height)
+        // imgType ที่รับ: 'auto' | 'logo' | 'person' | 'scene' | '' (ไม่มีรูป)
+        function fitSmartImage(imgEl, url, imgType) {
+            imgEl.classList.remove('fit-logo', 'fit-person', 'fit-scene');
+            const type = imgType || 'auto';
 
-        const animateNumber = (el, from, to, duration = 800) => {
-            const start = performance.now();
-            const step = (now) => {
-                const t = Math.min(1, (now - start) / duration);
-                const eased = 1 - Math.pow(1 - t, 3);
-                el.textContent = Math.round(from + (to - from) * eased);
-                if(t < 1) requestAnimationFrame(step);
+            if(!url || type === 'none') {
+                imgEl.style.display = 'none';
+                imgEl.removeAttribute('src');
+                return;
+            }
+
+            const applyClass = (cls) => {
+                imgEl.classList.add(cls);
+                imgEl.style.display = 'block';
+            };
+
+            if(type === 'logo' || type === 'person' || type === 'scene') {
+                imgEl.src = url;
+                applyClass('fit-' + type);
+                imgEl.onerror = () => { imgEl.style.display = 'none'; };
+                return;
+            }
+
+            // โหมด "auto" -> โหลดจริงแล้ววัดสัดส่วนก่อนตัดสินใจ
+            const probe = new Image();
+            probe.onload = () => {
+                const ratio = probe.naturalWidth / probe.naturalHeight;
+                imgEl.src = url;
+                imgEl.onerror = () => { imgEl.style.display = 'none'; };
+                if(ratio >= 0.8 && ratio <= 1.25) {
+                    // ใกล้เคียงสี่เหลี่ยมจัตุรัส -> ส่วนใหญ่คือโลโก้/ไอคอน/ตราสัญลักษณ์
+                    applyClass('fit-logo');
+                } else if(ratio < 0.8) {
+                    // แนวตั้ง (สูงกว่ากว้าง) -> มักเป็นรูปคน/นักกีฬาแบบเต็มตัว/ครึ่งตัว
+                    applyClass('fit-person');
+                } else {
+                    // แนวนอนกว้าง -> ภาพบรรยากาศ/สนาม/หมู่คณะ
+                    applyClass('fit-scene');
+                }
+            };
+            probe.onerror = () => { imgEl.style.display = 'none'; };
+            probe.src = url;
+        }
+
+        // คำใบ้เร็วๆ ว่าโจทย์นี้ "ไม่น่าจะต้องมีรูป" (คำถามแนวสถิติ/ตัวเลข)
+        const NO_IMAGE_HINT_WORDS = ['กี่','เท่าไหร่','เท่าไร','ยิงประตูเยอะสุด','มากที่สุด','น้อยที่สุด','จำนวน','สถิติ','ปีไหน','พ.ศ.','ค.ศ.'];
+        function suggestSkipImage(questionText) {
+            if(!questionText) return false;
+            return NO_IMAGE_HINT_WORDS.some(w => questionText.includes(w));
+        }
+
+        const speedPoints = (base, frac) =>
+            Math.round(base * (MIN_SPEED_RATIO + (1 - MIN_SPEED_RATIO) * Math.min(1, Math.max(0, frac))));
+        const comboPct = (streak) =>
+            streak >= 2 ? Math.min(COMBO_MAX_PCT, COMBO_START_PCT + (streak - 2) * COMBO_STEP_PCT) : 0;
+        const esc = (str) => String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // เวลาเซิร์ฟเวอร์ (กันนาฬิกาเครื่องแต่ละคนไม่ตรงกัน)
+        let serverOffset = 0;
+        onValue(ref(db, '.info/serverTimeOffset'), (s) => { serverOffset = s.val() || 0; });
+        const serverNow = () => Date.now() + serverOffset;
+
+        // ================= RESULT FX =================
+        function floatScore(text, cls, sub) {
+            const el = document.createElement('div');
+            el.className = 'float-score ' + cls;
+            el.innerHTML = esc(text) + (sub ? `<small>${esc(sub)}</small>` : '');
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1800);
+        }
+        function shakeScreen() {
+            if(reduceMotion) return;
+            const c = document.querySelector('.app-container');
+            c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
+            setTimeout(() => c.classList.remove('shake'), 520);
+        }
+        function celebrate(earned) {
+            floatScore('+' + earned.total, 'good', earned.pct > 0 ? `🔥 คอมโบ +${earned.pct}%` : '');
+            if(reduceMotion || typeof confetti !== 'function') return;
+            const colors = ['#E5334B', '#2F6FED', '#F2B01E', '#1FAE6B', '#ffffff'];
+            confetti({ particleCount: 110, spread: 80, origin: { y: 0.6 }, colors });
+            setTimeout(() => confetti({ particleCount: 60, angle: 60, spread: 60, origin: { x: 0, y: 0.7 }, colors }), 180);
+            setTimeout(() => confetti({ particleCount: 60, angle: 120, spread: 60, origin: { x: 1, y: 0.7 }, colors }), 320);
+        }
+
+        // ================= SUMMARY LEADERBOARD =================
+        let summaryListening = false;
+        let summaryOpenFor = null;
+        let summaryTimers = [];
+        let summaryToken = 0;
+
+        function listenSummary() {
+            if(summaryListening) return;
+            summaryListening = true;
+            onValue(ref(db, 'gameState/current'), (snap) => {
+                const d = snap.exists() ? snap.val() : null;
+                const want = !!(d && d.active && d.showSummary);
+                if(want && summaryOpenFor !== d.questionId) {
+                    summaryOpenFor = d.questionId;
+                    openSummary(d);
+                } else if(!want && summaryOpenFor !== null) {
+                    summaryOpenFor = null;
+                    closeSummary();
+                }
+            });
+        }
+
+        function countUp(el, from, to, ms) {
+            if(from === to || reduceMotion) { el.textContent = to; return; }
+            const t0 = performance.now();
+            const step = (t) => {
+                const k = Math.min(1, (t - t0) / ms);
+                el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+                if(k < 1) requestAnimationFrame(step);
             };
             requestAnimationFrame(step);
-        };
+        }
 
-        const showFloatingPoints = (base, bonus) => {
-            const p1 = document.createElement('div');
-            p1.className = 'float-point';
-            p1.textContent = `+${base}`;
-            document.body.appendChild(p1);
-            setTimeout(() => p1.remove(), 1300);
+        async function openSummary(d) {
+            const token = ++summaryToken;
+            summaryTimers.forEach(clearTimeout); summaryTimers = [];
+            const overlay = document.getElementById('summary-overlay');
+            const rowsEl = document.getElementById('summary-rows');
+            rowsEl.innerHTML = '';
+            document.getElementById('summary-sub').textContent = d.text || '';
+            const cd = document.getElementById('summary-countdown');
+            cd.innerHTML = '<i></i>';
+            cd.firstChild.style.setProperty('--dur', SUMMARY_MS + 'ms');
+            overlay.classList.remove('closing');
+            overlay.classList.add('open');
 
-            if(bonus > 0) {
-                const p2 = document.createElement('div');
-                p2.className = 'float-point bonus';
-                p2.textContent = `🔥 คอมโบ +${bonus}`;
-                document.body.appendChild(p2);
-                setTimeout(() => p2.remove(), 1500);
+            const snap = await get(ref(db, 'players'));
+            if(token !== summaryToken || summaryOpenFor !== d.questionId) return;
+
+            const players = [];
+            snap.forEach(c => players.push(c.val()));
+            players.forEach(p => {
+                p.score = p.score || 0;
+                p.gain = (p.lastQ === d.questionId) ? (p.lastGain || 0) : 0;
+                p.from = p.score - p.gain;
+            });
+            players.sort((a, b) => b.score - a.score);
+            if(!players.length) {
+                rowsEl.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">ยังไม่มีผู้เล่น</p>';
+                return;
             }
-        };
+
+            const max = Math.max(1, ...players.map(p => p.score));
+            const TOP = 8;
+            const shown = players.slice(0, TOP).map((p, i) => ({ p, rank: i + 1 }));
+            const meIdx = isAdmin ? -1 : players.findIndex(p => p.name === currentUser);
+            if(meIdx >= TOP) { shown.push({ sep: true }); shown.push({ p: players[meIdx], rank: meIdx + 1 }); }
+
+            shown.forEach((item, i) => {
+                if(item.sep) {
+                    const sep = document.createElement('div');
+                    sep.className = 'rank-sep'; sep.textContent = '• • •';
+                    rowsEl.appendChild(sep);
+                    return;
+                }
+                const { p, rank } = item;
+                const row = document.createElement('div');
+                row.className = 'rank-row' + (rank <= 3 ? ' r' + rank : '') + (!isAdmin && p.name === currentUser ? ' me' : '');
+                row.style.setProperty('--i', i);
+                row.innerHTML = `
+                    <div class="rank-pos">${rank}</div>
+                    <div class="rank-main">
+                        <div class="rank-top">
+                            <span class="rank-name">${esc(p.name)}</span>
+                            <span class="rank-gain">${p.gain > 0 ? '+' + p.gain : ''}</span>
+                            <span class="rank-score">${p.from}</span>
+                        </div>
+                        <div class="rank-bar"><i style="width:${(p.from / max * 100).toFixed(1)}%"></i></div>
+                    </div>`;
+                rowsEl.appendChild(row);
+
+                const delay = 250 + i * 130 + 350;
+                summaryTimers.push(setTimeout(() => {
+                    row.querySelector('.rank-bar i').style.width = (p.score / max * 100).toFixed(1) + '%';
+                    countUp(row.querySelector('.rank-score'), p.from, p.score, 1200);
+                    if(p.gain > 0) row.querySelector('.rank-gain').classList.add('show');
+                }, delay));
+            });
+        }
+
+        function closeSummary() {
+            const token = ++summaryToken;
+            summaryTimers.forEach(clearTimeout); summaryTimers = [];
+            const overlay = document.getElementById('summary-overlay');
+            if(!overlay.classList.contains('open')) return;
+            overlay.classList.add('closing');
+            setTimeout(() => {
+                if(token === summaryToken) overlay.classList.remove('open', 'closing');
+            }, 460);
+        }
+
+        // ================= AUTO FLOW (ทำงานที่เครื่องแอดมิน) =================
+        // หมดเวลา → เฉลย → กระดานสรุป → หุบ → กลับไปรอข้อถัดไป
+        let autoFlow = { qid: null, timers: [], reveal: false, summary: false, close: false };
+        function resetAutoFlow() {
+            autoFlow.timers.forEach(clearTimeout);
+            autoFlow = { qid: null, timers: [], reveal: false, summary: false, close: false };
+        }
+        function runAutoFlow(data) {
+            if(!data || !data.active) { resetAutoFlow(); return; }
+            if(autoFlow.qid !== data.questionId) { resetAutoFlow(); autoFlow.qid = data.questionId; }
+            const qid = data.questionId;
+            const later = (ms, fn) => autoFlow.timers.push(setTimeout(() => { if(autoFlow.qid === qid) fn(); }, ms));
+
+            if(!data.showAnswer) {
+                if(!autoFlow.reveal) {
+                    autoFlow.reveal = true;
+                    later(Math.max(0, data.endTime - serverNow()) + REVEAL_GRACE_MS,
+                        () => update(ref(db, 'gameState/current'), { showAnswer: true }));
+                }
+            } else if(!data.showSummary && !autoFlow.summary) {
+                autoFlow.summary = true;
+                later(REVEAL_TO_SUMMARY_MS, () => update(ref(db, 'gameState/current'), { showSummary: true }));
+            }
+            if(data.showSummary && !autoFlow.close) {
+                autoFlow.close = true;
+                later(SUMMARY_MS, async () => {
+                    await update(ref(db, 'gameState/current'), { showSummary: false });
+                    later(650, () => set(ref(db, 'gameState/current'), { active: false }));
+                });
+            }
+        }
 
         // ================= IMPORT JSON TAB SWITCHING =================
         window.switchImportTab = (tab) => {
@@ -1158,14 +1196,23 @@
         const fileName = document.getElementById('file-name');
 
         fileDropZone.addEventListener('click', () => fileInput.click());
-        fileDropZone.addEventListener('dragover', (e) => { e.preventDefault(); fileDropZone.classList.add('dragover'); });
-        fileDropZone.addEventListener('dragleave', () => fileDropZone.classList.remove('dragover'));
+
+        fileDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.add('dragover');
+        });
+
+        fileDropZone.addEventListener('dragleave', () => {
+            fileDropZone.classList.remove('dragover');
+        });
+
         fileDropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             fileDropZone.classList.remove('dragover');
             const files = e.dataTransfer.files;
             if(files.length > 0) handleFile(files[0]);
         });
+
         fileInput.addEventListener('change', (e) => {
             if(e.target.files.length > 0) handleFile(e.target.files[0]);
         });
@@ -1189,174 +1236,6 @@
             reader.readAsText(file);
         }
 
-        // ================= AUTO IMAGE FINDER (Wikipedia / Wikimedia Commons) =================
-        const IMG_BAD = /\.(svg|pdf|tiff?|webm|ogg|ogv|oga|djvu)(\.|\?|$)/i;
-        const IMG_LIMIT = 6;
-
-        async function wikiThumbs(lang, query) {
-            const url = `https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}`
-                + `&gsrlimit=${IMG_LIMIT}&prop=pageimages&piprop=thumbnail&pithumbsize=600&format=json&origin=*`;
-            const j = await (await fetch(url)).json();
-            const pages = j.query ? Object.values(j.query.pages) : [];
-            return pages.sort((a, b) => a.index - b.index)
-                .filter(pg => pg.thumbnail && !IMG_BAD.test(pg.thumbnail.source))
-                .map(pg => ({ url: pg.thumbnail.source, title: pg.title }));
-        }
-        async function commonsImages(query) {
-            const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}`
-                + `&gsrlimit=8&prop=imageinfo&iiprop=url|mime&iiurlwidth=600&format=json&origin=*`;
-            const j = await (await fetch(url)).json();
-            const pages = j.query ? Object.values(j.query.pages) : [];
-            return pages.sort((a, b) => a.index - b.index)
-                .filter(pg => pg.imageinfo && pg.imageinfo[0] && /^image\/(jpeg|png|webp)$/.test(pg.imageinfo[0].mime))
-                .map(pg => ({ url: pg.imageinfo[0].thumburl || pg.imageinfo[0].url, title: (pg.title || '').replace(/^File:/, '') }));
-        }
-
-        const imgCache = new Map();
-        // full=false: เร็ว (ใช้ตอนหาอัตโนมัติ) / full=true: รวมหลายแหล่งไว้ให้กดเปลี่ยนภาพ
-        async function findImages(query, full = false) {
-            query = (query || '').trim().slice(0, 80);
-            if(!query) return [];
-            const key = (full ? 'F:' : 'Q:') + query;
-            if(imgCache.has(key)) return imgCache.get(key);
-            const job = (async () => {
-                const safe = (p) => p.catch(() => []);
-                let groups;
-                if(full) {
-                    groups = await Promise.all([safe(wikiThumbs('th', query)), safe(wikiThumbs('en', query)), safe(commonsImages(query))]);
-                } else {
-                    groups = [await safe(wikiThumbs('th', query))];
-                    if(!groups[0].length) groups.push(await safe(wikiThumbs('en', query)));
-                }
-                const seen = new Set(), list = [];
-                groups.flat().forEach(x => { if(!seen.has(x.url)) { seen.add(x.url); list.push(x); } });
-                return list;
-            })();
-            imgCache.set(key, job);
-            const list = await job;
-            if(!list.length) imgCache.delete(key);
-            return list;
-        }
-
-        const looksLikeName = (t) => { t = (t || '').trim(); return t.length >= 2 && t.length <= 50 && !/^[\d\s.,:%฿$+\-–\/]+$/.test(t); };
-
-        // เติมรูปให้คำถาม (เฉพาะช่องที่ยังว่าง) — ไม่ต้องให้แอดมินยืนยัน
-        async function autoFillImages(q, want = { q: true, opt: true }) {
-            const jobs = [];
-            if(want.q && !q.img) jobs.push(findImages(q.imgQuery || q.text).then(l => { if(l[0]) q.img = l[0].url; }).catch(() => {}));
-            if(want.opt) for(let i = 1; i <= 4; i++) {
-                if(!q['img' + i] && looksLikeName(q['opt' + i])) jobs.push(findImages(q['opt' + i]).then(l => { if(l[0]) q['img' + i] = l[0].url; }).catch(() => {}));
-            }
-            await Promise.all(jobs);
-            return q;
-        }
-
-        function bindAutoBox(pre) {
-            const main = document.getElementById(pre + '-auto'), box = document.getElementById(pre + '-box');
-            main.addEventListener('change', () => box.classList.toggle('on', main.checked));
-        }
-        const readAutoBox = (pre) => ({
-            on: document.getElementById(pre + '-auto').checked,
-            want: { q: document.getElementById(pre + '-auto-q').checked, opt: document.getElementById(pre + '-auto-opt').checked }
-        });
-        bindAutoBox('imp'); bindAutoBox('q');
-
-        // ================= EDIT QUESTION =================
-        let editKey = null;
-        const $e = (id) => document.getElementById(id);
-        const slotEl = (n) => document.querySelector(`#edit-modal .img-slot[data-slot="${n}"]`);
-        const slotUrl = (n) => slotEl(n).querySelector('.img-url').value.trim();
-
-        function refreshSlot(n) {
-            const el = slotEl(n), url = slotUrl(n), img = el.querySelector('img'), ph = el.querySelector('.ph');
-            if(url) { img.src = url; img.style.display = 'block'; ph.style.display = 'none'; }
-            else { img.removeAttribute('src'); img.style.display = 'none'; ph.style.display = ''; }
-            el.querySelector('.img-next').textContent = url ? '🔄 เปลี่ยนภาพ' : '🔍 หาภาพ';
-        }
-        function setSlot(n, url, info = '') {
-            const el = slotEl(n);
-            el.querySelector('.img-url').value = url || '';
-            el.querySelector('.img-info').textContent = info;
-            refreshSlot(n);
-        }
-        const slotQuery = (n) => n === 'q' ? ($e('ed-imgq').value.trim() || $e('ed-text').value.trim()) : $e('ed-opt' + n).value.trim();
-
-        async function changeSlotImage(n) {
-            const el = slotEl(n), info = el.querySelector('.img-info'), btn = el.querySelector('.img-next');
-            const query = slotQuery(n);
-            if(!query) { showToast(n === 'q' ? 'พิมพ์คำถามหรือคำค้นหาก่อน' : 'พิมพ์ตัวเลือกก่อนหารูป', 'warning'); return; }
-            btn.disabled = true; info.textContent = 'กำลังหารูป…';
-            try {
-                const list = await findImages(query, true);
-                if(!list.length) { info.textContent = 'ไม่พบรูป ลองเปลี่ยนคำค้นหา หรือวาง URL เอง'; return; }
-                const cur = slotUrl(n);
-                const idx = (list.findIndex(x => x.url === cur) + 1) % list.length;
-                setSlot(n, list[idx].url, `ภาพที่ ${idx + 1}/${list.length} · ${list[idx].title}`);
-            } catch(e) {
-                info.textContent = 'หารูปไม่สำเร็จ (ตรวจอินเทอร์เน็ต)';
-            } finally { btn.disabled = false; }
-        }
-
-        document.querySelectorAll('#edit-modal .img-slot').forEach(el => {
-            const n = el.dataset.slot;
-            el.querySelector('.img-next').addEventListener('click', () => changeSlotImage(n));
-            el.querySelector('.img-clear').addEventListener('click', () => setSlot(n, ''));
-            el.querySelector('.img-url').addEventListener('change', () => { el.querySelector('.img-info').textContent = ''; refreshSlot(n); });
-            el.querySelector('img').addEventListener('error', () => {
-                if(slotUrl(n)) { el.querySelector('.img-info').textContent = 'โหลดรูปนี้ไม่ได้ — กด "เปลี่ยนภาพ"'; }
-                el.querySelector('img').style.display = 'none'; el.querySelector('.ph').style.display = '';
-            });
-        });
-
-        window.editQuestion = async (key) => {
-            const snap = await get(ref(db, 'questions/' + key));
-            if(!snap.exists()) { showToast('ไม่พบคำถามนี้ (อาจถูกส่งไปแล้ว)', 'warning'); return; }
-            const d = snap.val();
-            editKey = key;
-            $e('ed-text').value = d.text || '';
-            $e('ed-imgq').value = d.imgQuery || '';
-            for(let i = 1; i <= 4; i++) { $e('ed-opt' + i).value = d['opt' + i] || ''; setSlot(String(i), d['img' + i] || ''); }
-            setSlot('q', d.img || '');
-            $e('ed-correct').value = String(d.correct || 0);
-            $e('ed-points').value = d.points || 1000;
-            $e('ed-time').value = d.timeLimit || 20;
-            $e('ed-error').textContent = '';
-            $e('edit-modal').classList.add('active');
-        };
-
-        $e('ed-cancel').addEventListener('click', () => { $e('edit-modal').classList.remove('active'); editKey = null; });
-
-        $e('ed-auto-all').addEventListener('click', async () => {
-            const btn = $e('ed-auto-all'), label = btn.textContent;
-            btn.disabled = true; btn.textContent = '⏳ กำลังหารูป…';
-            const q = { text: $e('ed-text').value.trim(), imgQuery: $e('ed-imgq').value.trim(), img: slotUrl('q') };
-            for(let i = 1; i <= 4; i++) { q['opt' + i] = $e('ed-opt' + i).value.trim(); q['img' + i] = slotUrl(String(i)); }
-            await autoFillImages(q);
-            if(q.img && q.img !== slotUrl('q')) setSlot('q', q.img, 'หาให้อัตโนมัติ');
-            for(let i = 1; i <= 4; i++) if(q['img' + i] && q['img' + i] !== slotUrl(String(i))) setSlot(String(i), q['img' + i], 'หาให้อัตโนมัติ');
-            btn.disabled = false; btn.textContent = label;
-        });
-
-        $e('ed-save').addEventListener('click', async () => {
-            const err = $e('ed-error'); err.textContent = '';
-            const text = $e('ed-text').value.trim(), correct = parseInt($e('ed-correct').value);
-            if(!text || !correct) { err.textContent = 'กรอกคำถามและเฉลยด้วย'; return; }
-            try {
-                const cur = await get(ref(db, 'questions/' + editKey));
-                if(!cur.exists()) { showToast('คำถามนี้ถูกส่งไปแล้ว แก้ไขไม่ได้', 'warning'); $e('edit-modal').classList.remove('active'); return; }
-                await update(ref(db, 'questions/' + editKey), {
-                    text, imgQuery: $e('ed-imgq').value.trim(), img: slotUrl('q'),
-                    opt1: $e('ed-opt1').value.trim(), opt2: $e('ed-opt2').value.trim(),
-                    opt3: $e('ed-opt3').value.trim(), opt4: $e('ed-opt4').value.trim(),
-                    img1: slotUrl('1'), img2: slotUrl('2'), img3: slotUrl('3'), img4: slotUrl('4'),
-                    correct, points: parseInt($e('ed-points').value) || 1000, timeLimit: parseInt($e('ed-time').value) || 20
-                });
-                $e('edit-modal').classList.remove('active');
-                editKey = null;
-                showToast('บันทึกการแก้ไขแล้ว', 'success');
-            } catch(e) { err.textContent = 'บันทึกไม่สำเร็จ: ' + e.message; }
-        });
-
         // ================= IMPORT MODAL =================
         document.getElementById('open-import-modal-btn').addEventListener('click', () => {
             document.getElementById('import-modal').classList.add('active');
@@ -1371,14 +1250,20 @@
 
         document.getElementById('confirm-import-btn').addEventListener('click', async () => {
             let dataToImport = null;
+
+            // ตรวจสอบว่าใช้ tab ไหน
             const uploadTab = document.getElementById('import-tab-upload');
             if(uploadTab.classList.contains('active')) {
                 dataToImport = importedJsonData;
             } else {
                 const pastedText = document.getElementById('json-paste-area').value.trim();
                 if(pastedText) {
-                    try { dataToImport = JSON.parse(pastedText); }
-                    catch(err) { showToast('JSON ที่พิมพ์ไม่ถูกต้อง!', 'error'); return; }
+                    try {
+                        dataToImport = JSON.parse(pastedText);
+                    } catch(err) {
+                        showToast('JSON ที่พิมพ์ไม่ถูกต้อง!', 'error');
+                        return;
+                    }
                 }
             }
 
@@ -1387,172 +1272,101 @@
                 return;
             }
 
-            const auto = readAutoBox('imp');
-            const impBtn = document.getElementById('confirm-import-btn');
-            const total = dataToImport.length;
-            impBtn.disabled = true;
-
-            let successCount = 0, done = 0;
+            // Validate และ Import
+            let successCount = 0;
             for(let item of dataToImport) {
-                done++;
-                if(!item.text || !item.opt1 || !item.opt2 || !item.opt3 || !item.opt4 || !item.correct) continue;
-                const q = {
-                    text: item.text, img: item.img || '', imgQuery: item.imgQuery || '',
-                    opt1: item.opt1, opt2: item.opt2, opt3: item.opt3, opt4: item.opt4,
-                    img1: item.img1 || '', img2: item.img2 || '', img3: item.img3 || '', img4: item.img4 || '',
-                    correct: parseInt(item.correct), points: parseInt(item.points) || 1000,
-                    timeLimit: parseInt(item.timeLimit) || 20
-                };
-                if(auto.on) {
-                    impBtn.textContent = `🖼️ กำลังหารูป ${done}/${total}…`;
-                    await autoFillImages(q, auto.want);
+                if(!item.text || !item.opt1 || !item.opt2 || !item.opt3 || !item.opt4 || !item.correct) {
+                    continue; // ข้ามข้อมูลที่ไม่ครบ
                 }
-                await push(ref(db, 'questions'), q);
+                await push(ref(db, 'questions'), {
+                    text: item.text,
+                    img: item.img || '',
+                    imgType: item.img ? (item.imgType || 'auto') : 'none',
+                    opt1: item.opt1,
+                    opt2: item.opt2,
+                    opt3: item.opt3,
+                    opt4: item.opt4,
+                    correct: parseInt(item.correct),
+                    points: parseInt(item.points) || DEFAULT_POINTS,
+                    timeLimit: parseInt(item.timeLimit) || 20
+                });
                 successCount++;
             }
 
-            impBtn.disabled = false; impBtn.textContent = 'นำเข้า';
             document.getElementById('import-modal').classList.remove('active');
             showToast(`นำเข้า ${successCount} คำถามสำเร็จ!`, 'success');
         });
 
-        // ================= AUTH: LOGIN / REGISTER =================
-        const ADMIN_NAME = 'moosup';
+        // ================= LOGIN =================
+        const usernameInput = document.getElementById('username-input');
+        if(currentUser) {
+            usernameInput.value = currentUser;
+            checkAdminName(currentUser);
+            if(!isAdmin) monitorKick();
+        }
 
-        function saveSession(name, pass) { try { localStorage.setItem('quiz_session', JSON.stringify({ name, pass })); } catch(e){} }
-        function loadSession() { try { return JSON.parse(localStorage.getItem('quiz_session') || 'null'); } catch(e){ return null; } }
-        function clearSession() { try { localStorage.removeItem('quiz_session'); localStorage.removeItem('quiz_username'); } catch(e){} }
-
-        window.switchAuthTab = (tab) => {
-            const isLogin = tab === 'login';
-            document.getElementById('tab-login').classList.toggle('active', isLogin);
-            document.getElementById('tab-register').classList.toggle('active', !isLogin);
-            document.getElementById('auth-login-form').style.display = isLogin ? 'block' : 'none';
-            document.getElementById('auth-register-form').style.display = isLogin ? 'none' : 'block';
-            document.getElementById('login-error').textContent = '';
-            document.getElementById('reg-error').textContent = '';
-        };
+        usernameInput.addEventListener('input', (e) => checkAdminName(e.target.value));
 
         function checkAdminName(name) {
-            if(name.trim() === ADMIN_NAME) {
+            if(name.trim() === '3007x') {
                 document.getElementById('goto-admin-btn').style.display = 'block';
-                document.getElementById('auth-login-form').style.display = 'none';
-                document.getElementById('auth-register-form').style.display = 'none';
-                document.querySelector('.auth-tabs').style.display = 'none';
+                document.getElementById('join-btn').style.display = 'none';
             } else {
                 document.getElementById('goto-admin-btn').style.display = 'none';
-                const activeTab = document.getElementById('tab-login').classList.contains('active') ? 'login' : 'register';
-                document.getElementById('auth-login-form').style.display = activeTab === 'login' ? 'block' : 'none';
-                document.getElementById('auth-register-form').style.display = activeTab === 'register' ? 'block' : 'none';
-                document.querySelector('.auth-tabs').style.display = 'flex';
+                document.getElementById('join-btn').style.display = 'block';
             }
         }
 
-        async function doLogin() {
-            const name = document.getElementById('login-name').value.trim();
-            const pass = document.getElementById('login-pass').value;
-            const errEl = document.getElementById('login-error');
-            errEl.textContent = '';
+        function doJoin() {
+            const name = usernameInput.value.trim();
+            if(!name) return showToast('กรุณาใส่ชื่อก่อนเข้าเล่น!', 'warning');
+            if(document.getElementById('join-btn').style.display === 'none') return; // ชื่อแอดมิน ไม่ควรเข้าร่วมเกม
 
-            if(!name || !pass) { errEl.textContent = 'กรุณากรอกชื่อและรหัสผ่าน'; return; }
-            if(name === ADMIN_NAME) { errEl.textContent = 'บัญชีนี้สงวนสำหรับแอดมิน'; return; }
-
-            const snap = await get(ref(db, 'members/' + name));
-            if(!snap.exists()) { errEl.textContent = 'ไม่พบบัญชีนี้ กรุณาสมัครสมาชิกก่อน'; return; }
-            if(snap.val().password !== pass) { errEl.textContent = 'รหัสผ่านไม่ถูกต้อง'; return; }
-
-            enterGame(name, pass);
-        }
-
-        async function doRegister() {
-            const name = document.getElementById('reg-name').value.trim();
-            const pass = document.getElementById('reg-pass').value;
-            const pass2 = document.getElementById('reg-pass2').value;
-            const errEl = document.getElementById('reg-error');
-            errEl.textContent = '';
-
-            if(!name || !pass) { errEl.textContent = 'กรุณากรอกชื่อและรหัสผ่าน'; return; }
-            if(name.length < 2) { errEl.textContent = 'ชื่อต้องยาวอย่างน้อย 2 ตัวอักษร'; return; }
-            if(pass.length < 4) { errEl.textContent = 'รหัสผ่านต้องยาวอย่างน้อย 4 ตัวอักษร'; return; }
-            if(pass !== pass2) { errEl.textContent = 'รหัสผ่านยืนยันไม่ตรงกัน'; return; }
-            if(name === ADMIN_NAME) { errEl.textContent = 'ไม่สามารถใช้ชื่อนี้ได้'; return; }
-
-            const snap = await get(ref(db, 'members/' + name));
-            if(snap.exists()) { errEl.textContent = 'ชื่อนี้ถูกใช้ไปแล้ว ลองชื่ออื่น'; return; }
-
-            await set(ref(db, 'members/' + name), { name, password: pass, createdAt: getNow() });
-            showToast('สมัครสมาชิกสำเร็จ! เข้าสู่ระบบเลย', 'success');
-
-            switchAuthTab('login');
-            document.getElementById('login-name').value = name;
-            document.getElementById('login-pass').focus();
-        }
-
-        async function enterGame(name, pass, silent = false) {
             currentUser = name;
-            saveSession(name, pass);
-            try { localStorage.setItem('quiz_username', currentUser); } catch(e){}
-            try {
-                const playerRef = ref(db, 'players/' + currentUser);
-                const existing = await get(playerRef);
-                if(existing.exists()) {
-                    await update(playerRef, { name: currentUser, lastActive: getNow() });
-                } else {
-                    await set(playerRef, { name: currentUser, score: 0, streak: 0, lastRoundPoints: 0, lastRoundCorrect: null, lastActive: getNow() });
-                }
+            localStorage.setItem('quiz_username', currentUser);
+
+            set(ref(db, 'players/' + currentUser), { name: currentUser, score: 0, streak: 0, lastActive: Date.now() })
+            .then(() => {
                 document.getElementById('display-player-name').textContent = currentUser;
                 switchScreen('player-screen');
                 listenToGameState();
+                listenSummary();
                 monitorKick();
-                const audioUnlock = document.getElementById('snd-tick');
+                let audioUnlock = document.getElementById('snd-tick');
                 audioUnlock.volume = 0;
                 audioUnlock.play().then(() => audioUnlock.volume = 1).catch(e => {});
-                if(!silent) showToast(`ยินดีต้อนรับ ${currentUser}!`, 'success');
-            } catch(err) {
+                showToast(`ยินดีต้อนรับ ${currentUser}!`, 'success');
+            })
+            .catch((err) => {
+                // เดิมโค้ดตรงนี้ไม่มี .catch() เลย ถ้า Firebase เขียนข้อมูลไม่ผ่าน (เช่น Database Rules
+                // ไม่อนุญาต หรือ databaseURL/เน็ตมีปัญหา) มันจะเงียบไปเฉยๆ กดปุ่มแล้วเหมือนไม่มีอะไรเกิดขึ้น
                 console.error('Join failed:', err);
                 showToast('เข้าร่วมเกมไม่สำเร็จ: ' + err.message, 'error');
-            }
+            });
         }
 
-        (async function autoLogin() {
-            const sess = loadSession();
-            if(!sess || !sess.name || !sess.pass) return;
-            try {
-                const snap = await get(ref(db, 'members/' + sess.name));
-                if(snap.exists() && snap.val().password === sess.pass) await enterGame(sess.name, sess.pass, true);
-                else clearSession();
-            } catch(e) { clearSession(); }
-        })();
-        
-        document.getElementById('login-btn').addEventListener('click', doLogin);
-        document.getElementById('register-btn').addEventListener('click', doRegister);
-        document.getElementById('login-name').addEventListener('input', (e) => checkAdminName(e.target.value));
-        document.getElementById('login-pass').addEventListener('keydown', (e) => { if(e.key === 'Enter') doLogin(); });
-        document.getElementById('login-name').addEventListener('keydown', (e) => { if(e.key === 'Enter') document.getElementById('login-pass').focus(); });
-        document.getElementById('reg-pass2').addEventListener('keydown', (e) => { if(e.key === 'Enter') doRegister(); });
+        document.getElementById('join-btn').addEventListener('click', doJoin);
+        usernameInput.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') doJoin();
+        });
 
-        let unsubKick = null;
         function monitorKick() {
-            if(unsubKick) unsubKick();
-            unsubKick = onValue(ref(db, 'players/' + currentUser), (snapshot) => {
+            onValue(ref(db, 'players/' + currentUser), (snapshot) => {
                 if(!snapshot.exists() && currentUser && !isAdmin) {
                     currentUser = '';
-                    clearSession();
+                    localStorage.removeItem('quiz_username');
                     switchScreen('login-screen');
-                    document.getElementById('login-name').value = '';
-                    document.getElementById('login-pass').value = '';
+                    usernameInput.value = '';
                     showToast('คุณถูกเตะออกจากห้อง!', 'error');
                 } else if(snapshot.exists()) {
-                    const newScore = snapshot.val().score || 0;
-                    const scoreEl = document.getElementById('display-player-score');
-                    if(newScore !== currentScore) animateNumber(scoreEl, currentScore, newScore, 700);
-                    currentScore = newScore;
+                    currentScore = snapshot.val().score;
                     currentStreak = snapshot.val().streak || 0;
+                    document.getElementById('display-player-score').textContent = currentScore;
 
                     const badge = document.getElementById('streak-badge');
                     if(currentStreak >= 2) {
                         badge.style.display = 'block';
-                        badge.textContent = `🔥 คอมโบ x${currentStreak}`;
+                        badge.textContent = `🔥 คอมโบ x${currentStreak} · บูส +${comboPct(currentStreak)}%`;
                     } else {
                         badge.style.display = 'none';
                     }
@@ -1570,38 +1384,27 @@
             document.getElementById('pin-modal').classList.remove('active');
         });
 
-        // PIN แอดมิน: ใช้ค่าที่เปลี่ยนไว้ใน Firebase (settings/adminPin) ถ้ายังไม่เคยเปลี่ยนใช้ 010203
-        async function getAdminPin() {
-            try {
-                const s = await get(ref(db, 'settings/adminPin'));
-                if(s.exists()) return String(s.val());
-            } catch(e) {}
-            return '010203';
-        }
-
-        document.getElementById('submit-pin-btn').addEventListener('click', async () => {
-            const expectedPin = await getAdminPin();
-            if(document.getElementById('admin-pin').value === expectedPin) {
+        document.getElementById('submit-pin-btn').addEventListener('click', () => {
+            if(document.getElementById('admin-pin').value === '010203') {
                 isAdmin = true;
                 document.getElementById('pin-modal').classList.remove('active');
                 switchScreen('admin-screen');
                 initAdminDashboard();
                 listenToGameState();
+                listenSummary();
                 showToast('เข้าสู่ระบบแอดมินสำเร็จ', 'success');
             } else {
                 showToast('PIN ไม่ถูกต้อง!', 'error');
             }
         });
 
-        // ออกจากระบบ (ทั้งผู้เล่นและแอดมิน): ล้าง session แล้วโหลดหน้าใหม่ให้สถานะสะอาด
-        window.logout = () => {
-            if(!confirm('ต้องการออกจากระบบใช่ไหม?')) return;
+        window.logoutAdmin = () => {
             isAdmin = false;
-            currentUser = '';
-            clearSession();
-            location.reload();
+            switchScreen('login-screen');
+            usernameInput.value = '';
+            localStorage.removeItem('quiz_username');
+            checkAdminName('');
         };
-        window.logoutAdmin = window.logout;
 
         function initAdminDashboard() {
             onValue(ref(db, 'questions'), (snapshot) => {
@@ -1610,17 +1413,18 @@
                 if(snapshot.exists()) {
                     snapshot.forEach((child) => {
                         const data = child.val();
-                        const nImg = ['img', 'img1', 'img2', 'img3', 'img4'].filter(k => data[k]).length;
+                        const imgBadge = !data.img ? '🚫 ไม่มีรูป'
+                            : data.imgType === 'logo' ? '🛡️ โลโก้'
+                            : data.imgType === 'person' ? '🧑 รูปคน'
+                            : data.imgType === 'scene' ? '🖼️ ภาพทั่วไป'
+                            : '🤖 ออโต้';
                         qList.innerHTML += `
-                            <div class="list-item" style="gap: 10px;">
-                                <div style="flex: 1; min-width: 0;">
+                            <div class="list-item">
+                                <div style="flex: 1;">
                                     <strong style="color: var(--text-bright);">${data.text}</strong><br>
-                                    <span style="font-size: 12px; color: var(--text-muted);">เฉลย: ข้อ ${data.correct} | ⏱️ ${data.timeLimit}วิ | 💎 ${data.points}pt${nImg ? ' | 🖼️ ' + nImg : ''}</span>
+                                    <span style="font-size: 12px; color: var(--text-muted);">เฉลย: ข้อ ${data.correct} | ⏱️ ${data.timeLimit}วิ | 💎 ${data.points}pt | ${imgBadge}</span>
                                 </div>
-                                <div class="list-actions">
-                                    <button class="purple" onclick="editQuestion('${child.key}')" aria-label="แก้ไข" title="แก้ไข">✏️</button>
-                                    <button class="success" onclick="pushQuestion('${child.key}')">ส่ง</button>
-                                </div>
+                                <button class="success" style="width: auto; padding: 8px 16px; font-size: 13px;" onclick="pushQuestion('${child.key}')">ส่ง</button>
                             </div>`;
                     });
                 } else {
@@ -1657,15 +1461,20 @@
                 if(snapshot.exists() && snapshot.val().active) {
                     const data = snapshot.val();
                     btnShow.disabled = !!data.showAnswer;
+                    runAutoFlow(data);
+                    const phaseLabel = data.showSummary ? '📊 แสดงกระดานสรุป' : data.showAnswer ? '✅ เฉลยแล้ว' : '● กำลังเล่น (เฉลยอัตโนมัติเมื่อหมดเวลา)';
                     let counts = {1:0, 2:0, 3:0, 4:0};
                     let totalAnswers = 0;
                     if(data.answers) {
-                        Object.values(data.answers).forEach(ans => { counts[ans]++; totalAnswers++; });
+                        Object.values(data.answers).forEach(ans => {
+                            counts[ans]++;
+                            totalAnswers++;
+                        });
                     }
 
                     cur.innerHTML = `
                         <div style="margin-bottom:12px;">
-                            <span class="badge badge-live">● กำลังเล่น${data.showAnswer ? ' (เฉลยแล้ว)' : ''}</span>
+                            <span class="badge badge-live">${phaseLabel}</span>
                         </div>
                         <strong style="color: var(--text-bright); font-size: 15px;">${data.text}</strong>
                         <div style="margin-top: 12px; font-size: 13px; color: var(--text-muted);">
@@ -1680,108 +1489,93 @@
                 } else {
                     cur.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">ยังไม่มีคำถามที่กำลังเล่น</p>';
                     btnShow.disabled = true;
+                    runAutoFlow(null);
                 }
             });
         }
 
-        document.getElementById('add-question-btn').addEventListener('click', async () => {
+        // ---------- LIVE PREVIEW ของรูปในฟอร์มสร้างคำถาม ----------
+        const qImgInput = document.getElementById('q-img');
+        const qImgTypeSelect = document.getElementById('q-img-type');
+        const qImgPreview = document.getElementById('q-img-preview');
+        const qImgHint = document.getElementById('q-img-hint');
+        const qTextInput = document.getElementById('q-text');
+
+        function refreshImgPreview() {
+            const url = qImgInput.value.trim();
+            fitSmartImage(qImgPreview, url, qImgTypeSelect.value);
+        }
+        qImgInput.addEventListener('input', refreshImgPreview);
+        qImgTypeSelect.addEventListener('change', refreshImgPreview);
+
+        qTextInput.addEventListener('input', () => {
+            const text = qTextInput.value.trim();
+            if(!qImgInput.value.trim() && suggestSkipImage(text)) {
+                qImgHint.textContent = '💡 โจทย์แนวนี้มักไม่ต้องมีรูป (เป็นคำถามสถิติ/ตัวเลข) เว้นว่างไว้ได้เลย';
+                qImgHint.style.color = 'var(--warning)';
+            } else {
+                qImgHint.textContent = 'ไม่ใส่ URL รูป = ไม่ต้องมีรูปเลย เหมาะกับคำถามสถิติ/ตัวเลข';
+                qImgHint.style.color = 'var(--text-muted)';
+            }
+        });
+
+        document.getElementById('add-question-btn').addEventListener('click', () => {
             const text = document.getElementById('q-text').value.trim();
             const correct = parseInt(document.getElementById('q-correct').value);
             if(!text || correct === 0) return showToast('กรอกคำถามและเฉลยด้วย!', 'warning');
 
-            const btn = document.getElementById('add-question-btn');
-            const q = {
-                text, img: document.getElementById('q-img').value.trim(), imgQuery: '',
+            const imgUrl = document.getElementById('q-img').value.trim();
+            push(ref(db, 'questions'), {
+                text,
+                img: imgUrl,
+                imgType: imgUrl ? document.getElementById('q-img-type').value : 'none',
                 opt1: document.getElementById('q-opt1').value.trim(),
                 opt2: document.getElementById('q-opt2').value.trim(),
                 opt3: document.getElementById('q-opt3').value.trim(),
                 opt4: document.getElementById('q-opt4').value.trim(),
-                img1: '', img2: '', img3: '', img4: '',
-                correct, points: parseInt(document.getElementById('q-points').value) || 1000,
+                correct,
+                points: parseInt(document.getElementById('q-points').value) || DEFAULT_POINTS,
                 timeLimit: parseInt(document.getElementById('q-time').value) || 20
-            };
-            btn.disabled = true;
-            try {
-                const auto = readAutoBox('q');
-                if(auto.on) { btn.textContent = '🖼️ กำลังหารูป…'; await autoFillImages(q, auto.want); }
-                await push(ref(db, 'questions'), q);
+            }).then(() => {
                 showToast('บันทึกลงคิวสำเร็จ!', 'success');
                 ['q-text','q-img','q-opt1','q-opt2','q-opt3','q-opt4'].forEach(id => document.getElementById(id).value = '');
                 document.getElementById('q-correct').value = '0';
-            } catch(e) {
-                showToast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
-            } finally {
-                btn.disabled = false; btn.textContent = 'บันทึกลงคิว';
-            }
+                document.getElementById('q-img-type').value = 'auto';
+                qImgPreview.style.display = 'none';
+                qImgHint.textContent = 'ไม่ใส่ URL รูป = ไม่ต้องมีรูปเลย เหมาะกับคำถามสถิติ/ตัวเลข';
+                qImgHint.style.color = 'var(--text-muted)';
+            });
         });
 
         window.pushQuestion = async (key) => {
             const snapshot = await get(ref(db, 'questions/' + key));
-            if(!snapshot.exists()) return;
+            if(snapshot.exists()) {
+                const data = snapshot.val();
+                data.active = true;
+                data.questionId = key;
+                data.showAnswer = false;
+                data.points = parseInt(data.points) || DEFAULT_POINTS;
+                data.timeLimit = parseInt(data.timeLimit) || 20;
+                data.endTime = serverNow() + (data.timeLimit * 1000);
 
-            const data = snapshot.val();
-            data.active = true;
-            data.questionId = key;
-            data.showAnswer = false;
-            data.revealedAt = null;
-            
-            data.timeLimit = Math.max(1, parseInt(data.timeLimit, 10) || 20);
-            
-            const now = getNow();
-            const prepareUntil = now + PREPARE_DURATION_MS;
-            data.prepareUntil = prepareUntil;
-            data.answerStartAt = prepareUntil;
-            data.startedAt = prepareUntil; 
-            data.endTime = prepareUntil + (data.timeLimit * 1000);
-
-            const playersSnap = await get(ref(db, 'players'));
-            if(playersSnap.exists()) {
-                let resetUpdates = {};
-                playersSnap.forEach(c => {
-                    resetUpdates[c.key + '/lastRoundPoints'] = 0;
-                    resetUpdates[c.key + '/lastRoundCorrect'] = null;
-                });
-                await update(ref(db, 'players'), resetUpdates);
+                await set(ref(db, 'gameState'), { current: data, podium: false });
+                await remove(ref(db, 'questions/' + key));
+                showToast('ส่งคำถามแล้ว!', 'success');
             }
-
-            await set(ref(db, 'gameState'), { current: data, podium: false, summary: { active: false } });
-            await remove(ref(db, 'questions/' + key));
-            showToast('ส่งคำถามแล้ว!', 'success');
         };
 
-        async function advanceToNextQuestion(completedQuestionId) {
-            if(!isAdmin || autoAdvancedFor === completedQuestionId) return;
-            autoAdvancedFor = completedQuestionId;
-            try {
-                const queueSnap = await get(ref(db, 'questions'));
-                if(!queueSnap.exists()) {
-                    await set(ref(db, 'gameState'), { current: { active: false }, podium: false, summary: { active: false } });
-                    showToast('จบรอบนี้แล้ว — ยังไม่มีคำถามถัดไปในคิว', 'normal');
-                    return;
-                }
-                let nextKey = null;
-                queueSnap.forEach(child => { if(!nextKey) nextKey = child.key; });
-                if(nextKey) await window.pushQuestion(nextKey);
-            } catch(err) {
-                console.error('Auto next question failed:', err);
-                showToast('เปิดคำถามถัดไปไม่สำเร็จ กรุณาตรวจสอบคิวคำถาม', 'error');
-            }
-        }
-
         document.getElementById('show-answer-btn').addEventListener('click', () => {
-            const now = getNow();
-            update(ref(db, 'gameState/current'), { showAnswer: true, revealedAt: now, summaryAt: now + REVEAL_TO_SUMMARY_MS });
+            update(ref(db, 'gameState/current'), { showAnswer: true });
             showToast('แสดงเฉลยแล้ว', 'success');
         });
 
         document.getElementById('clear-current-q-btn').addEventListener('click', () => {
-            set(ref(db, 'gameState/current'), { active: false, hiddenAt: getNow() });
-            set(ref(db, 'gameState/summary'), { active: false, hiddenAt: getNow() });
+            set(ref(db, 'gameState/current'), { active: false });
         });
 
         document.getElementById('trigger-podium-btn').addEventListener('click', () => {
             set(ref(db, 'gameState/current'), { active: false });
-            update(ref(db, 'gameState'), { podium: true, summary: { active: false } });
+            update(ref(db, 'gameState'), { podium: true });
         });
 
         document.getElementById('back-to-lobby-btn').addEventListener('click', () => {
@@ -1805,71 +1599,14 @@
                     snap.forEach(c => {
                         updates[c.key+'/score'] = 0;
                         updates[c.key+'/streak'] = 0;
-                        updates[c.key+'/lastRoundPoints'] = 0;
-                        updates[c.key+'/lastRoundCorrect'] = null;
                     });
                     update(ref(db, 'players'), updates);
                 }
             }
         };
 
-        // ================= ROUND SUMMARY =================
-        async function renderSummaryScreen() {
-            try {
-                const snap = await get(ref(db, 'players'));
-                let players = [];
-                if(snap.exists()) snap.forEach(c => players.push(c.val()));
-                players.sort((a, b) => (b.score||0) - (a.score||0));
-
-                const maxScore = Math.max(1, ...players.map(p => p.score || 0));
-                const container = document.getElementById('summary-list');
-
-                if(players.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">ไม่มีผู้เล่น</p>';
-                    return;
-                }
-
-                container.innerHTML = players.map((p, i) => {
-                    const rank = i + 1;
-                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
-                    const widthPct = Math.max(6, Math.round(((p.score || 0) / maxScore) * 100));
-                    
-                    // บังคับแสดง +0 เสมอ ไม่ว่าค่าคะแนนหรือค่าตอบถูกจะเป็นอะไร เพื่อกันข้อความหาย
-                    const gained = p.lastRoundPoints || 0;
-                    const gainedHtml = `<span class="rank-gain ${gained <= 0 ? 'rank-gain-zero' : ''}">+${gained}</span>`;
-
-                    return `
-                        <div class="rank-row ${rank <= 3 ? 'rank-' + rank : ''}" style="animation-delay:${i * 0.08}s">
-                            <div class="rank-medal">${medal}</div>
-                            <div class="rank-info">
-                                <div class="rank-name">${p.name || 'Unknown'}${p.streak >= 2 ? `<span class="mini-flame">🔥x${p.streak}</span>` : ''}</div>
-                                <div class="rank-bar-track"><div class="rank-bar-fill" data-target-width="${widthPct}"></div></div>
-                            </div>
-                            <div class="rank-score-wrap">
-                                <div class="rank-score" data-target="${p.score || 0}">0</div>
-                                ${gainedHtml}
-                            </div>
-                        </div>`;
-                }).join('');
-
-                requestAnimationFrame(() => {
-                    document.querySelectorAll('#summary-list .rank-bar-fill').forEach(el => {
-                        el.style.width = (el.dataset.targetWidth || 0) + '%';
-                    });
-                    document.querySelectorAll('#summary-list .rank-score').forEach(el => {
-                        animateNumber(el, 0, parseInt(el.dataset.target) || 0, 900);
-                    });
-                });
-            } catch (err) {
-                console.error("Summary Render Error: ", err);
-            }
-        }
-
         // ================= GAME STATE =================
         function listenToGameState() {
-            if(gameStateListenerStarted) return;
-            gameStateListenerStarted = true;
-
             onValue(ref(db, 'gameState/podium'), async (snapshot) => {
                 if(snapshot.exists() && snapshot.val() === true) {
                     isPodiumActive = true;
@@ -1878,7 +1615,9 @@
 
                     const pSnap = await get(ref(db, 'players'));
                     let players = [];
-                    if(pSnap.exists()) pSnap.forEach(c => players.push(c.val()));
+                    if(pSnap.exists()) {
+                        pSnap.forEach(c => players.push(c.val()));
+                    }
                     players.sort((a, b) => b.score - a.score);
 
                     const pContainer = document.getElementById('podium-container');
@@ -1893,20 +1632,17 @@
                                 <div class="podium-bar place-${placeNum}">
                                     <div class="podium-name">${p.name}</div>
                                     <div style="font-size:28px;">${placeNum === 1 ? '🥇' : placeNum === 2 ? '🥈' : '🥉'}</div>
-                                    <div class="podium-score" data-target="${p.score}">0</div>
+                                    <div class="podium-score">${p.score}</div>
                                 </div>
                             `;
                         }
-                    });
-                    document.querySelectorAll('#podium-container .podium-score').forEach((el, i) => {
-                        setTimeout(() => animateNumber(el, 0, parseInt(el.dataset.target) || 0, 900), 300 + i * 150);
                     });
 
                     let duration = 3 * 1000;
                     let end = Date.now() + duration;
                     (function frame() {
-                        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#00E5FF','#FF2E9A','#FFD60A','#22D37A'] });
-                        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#00E5FF','#FF2E9A','#FFD60A','#22D37A'] });
+                        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#38BDF8','#F97316','#10B981'] });
+                        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#38BDF8','#F97316','#10B981'] });
                         if(Date.now() < end) requestAnimationFrame(frame);
                     }());
                 } else if(isPodiumActive) {
@@ -1916,321 +1652,153 @@
             });
 
             onValue(ref(db, 'gameState/current'), (snapshot) => {
-                liveCurrentState = snapshot.exists() ? snapshot.val() : null;
-            });
-
-            onValue(ref(db, 'gameState/summary'), (snapshot) => {
-                const val = snapshot.exists() ? snapshot.val() : null;
-                liveSummaryState = val;
-                if(val && val.active) {
-                    if(isPodiumActive) return;
-                    isSummaryActive = true;
-                    // เปิดหน้าจอให้แสดงก่อน แล้วค่อยสร้างข้อมูล เพื่อลดบั๊กแอนิเมชันบนมือถือ
-                    switchScreen('summary-screen');
-                    renderSummaryScreen();
-                    playSound('snd-win');
-                } else if(isSummaryActive) {
-                    isSummaryActive = false;
-                    if(!isPodiumActive) switchScreen(isAdmin ? 'admin-screen' : 'player-screen');
-                }
-            });
-
-            // ================= AUTO-ENGINE FIXED =================
-            if(autoEngineStarted) return;
-            autoEngineStarted = true;
-            setInterval(() => {
-                if(!isAdmin) return; 
-
-                if(!liveCurrentState || !liveCurrentState.active) return;
-                
-                const now = getNow();
-
-                if(!liveCurrentState.showAnswer
-                   && liveCurrentState.answerStartAt
-                   && now >= liveCurrentState.endTime
-                   && autoRevealedFor !== liveCurrentState.questionId) {
-                    autoRevealedFor = liveCurrentState.questionId;
-                    update(ref(db, 'gameState/current'), { showAnswer: true, revealedAt: now, summaryAt: now + REVEAL_TO_SUMMARY_MS }).catch(()=>{});
-                }
-
-                if(liveCurrentState.showAnswer && liveCurrentState.revealedAt
-                   && now >= (liveCurrentState.summaryAt || (liveCurrentState.revealedAt + REVEAL_TO_SUMMARY_MS))
-                   && (!liveSummaryState || !liveSummaryState.active)
-                   && summaryShownFor !== liveCurrentState.questionId) {
-                    summaryShownFor = liveCurrentState.questionId;
-                    update(ref(db, 'gameState/summary'), { active: true, questionId: liveCurrentState.questionId, ts: now }).catch(()=>{});
-                }
-
-                if(liveSummaryState && liveSummaryState.active && liveSummaryState.ts
-                   && now >= liveSummaryState.ts + SUMMARY_DURATION_MS
-                   && summaryHiddenFor !== liveSummaryState.questionId) {
-                    summaryHiddenFor = liveSummaryState.questionId;
-                    const completedQuestionId = liveSummaryState.questionId;
-                    
-                    advanceToNextQuestion(completedQuestionId);
-                }
-            }, 500);
-
-            // ผู้เล่น
-            onValue(ref(db, 'gameState/current'), (snapshot) => {
-                if(isPodiumActive || isAdmin || isSummaryActive) return;
+                if(isPodiumActive || isAdmin) return;
 
                 const waitArea = document.getElementById('waiting-area');
                 const qArea = document.getElementById('question-area');
 
                 if(snapshot.exists() && snapshot.val().active) {
                     const data = snapshot.val();
-                    data.timeLimit = Math.max(1, parseInt(data.timeLimit, 10) || 20);
-                    if(!Number(data.answerStartAt)) {
-                        data.answerStartAt = Number(data.startedAt) || (getNow() + PREPARE_DURATION_MS);
-                    }
-                    if(!Number(data.prepareUntil)) data.prepareUntil = data.answerStartAt;
-                    if(!Number(data.endTime) || data.endTime <= data.answerStartAt) {
-                        data.endTime = data.answerStartAt + (data.timeLimit * 1000);
-                    }
+                    currentQ = data;
 
                     if(activeQuestionId !== data.questionId) {
                         hasAnsweredCurrent = false;
                         mySelectedOption = null;
-                        myEarnedBase = 0;
-                        myBonus = 0;
-                        myAnsweredAt = null;
-                        scoreAppliedFor = null;
+                        myEarned = null;
+                        revealedFor = null;
                         activeQuestionId = data.questionId;
                         document.getElementById('answer-result-text').style.display = 'none';
                         document.querySelectorAll('.option-btn').forEach(btn => {
-                            btn.className = btn.className.replace(/\b(selected|correct|wrong)\b/g, '').trim();
-                            btn.style.pointerEvents = "auto";
-                            btn.style.opacity = "1";
+                            btn.classList.remove('selected', 'correct', 'wrong', 'dim');
+                            btn.style.pointerEvents = 'auto';
                             btn.disabled = false;
                         });
-
-                        clearInterval(timerInterval);
-                        clearInterval(prepareInterval);
-                        const timerWrap = document.getElementById('player-timer-wrap');
-                        const timerDisplay = document.getElementById('player-timer');
-                        const ringProgress = document.getElementById('timer-ring-progress');
-                        const circumference = 2 * Math.PI * 50;
-                        timerWrap.classList.remove('danger');
-                        timerWrap.style.visibility = 'hidden';
-                        timerDisplay.textContent = '—';
-                        ringProgress.style.strokeDashoffset = 0;
-
-                        preparePhaseActive = true;
-                        const prepBanner = document.getElementById('prepare-banner');
-                        const prepCountdown = document.getElementById('prepare-countdown');
-                        const optsGrid = document.getElementById('player-options-grid');
-
-                        document.getElementById('player-question-text').classList.remove('anim-question-in');
-                        document.getElementById('player-question-img').classList.remove('anim-img-in');
-                        document.getElementById('player-timer-wrap').classList.remove('anim-timer-in');
-                        void document.getElementById('player-question-text').offsetWidth;
-
-                        prepBanner.classList.remove('anim-banner-out');
-                        prepBanner.style.display = 'block';
-                        optsGrid.style.display = 'none';
-
-                        document.getElementById('player-question-text').classList.add('anim-question-in');
-                        const imgElPre = document.getElementById('player-question-img');
-                        if(imgElPre.style.display !== 'none') imgElPre.classList.add('anim-img-in');
-
-                        const questionStartAt = Number(data.prepareUntil) || Number(data.answerStartAt) || (getNow() + PREPARE_DURATION_MS);
-                        let prepRemaining = Math.ceil(PREPARE_DURATION_MS / 1000);
-                        prepCountdown.textContent = prepRemaining;
-
-                        prepareInterval = setInterval(() => {
-                            const remainMs = questionStartAt - getNow();
-                            prepRemaining = Math.max(0, Math.ceil(remainMs / 1000));
-                            prepCountdown.textContent = prepRemaining;
-                            if(remainMs <= 0) {
-                                clearInterval(prepareInterval);
-                                preparePhaseActive = false;
-
-                                prepBanner.classList.add('anim-banner-out');
-                                setTimeout(() => {
-                                    prepBanner.style.display = 'none';
-                                    prepBanner.classList.remove('anim-banner-out');
-                                }, 300);
-
-                                optsGrid.style.display = 'grid';
-                                document.querySelectorAll('#player-options-grid .option-btn').forEach((btn, i) => {
-                                    btn.classList.remove('anim-option-in');
-                                    btn.style.animationDelay = (i * 0.08) + 's';
-                                    void btn.offsetWidth;
-                                    btn.classList.add('anim-option-in');
-                                });
-
-                                const timerWrapEl = document.getElementById('player-timer-wrap');
-                                timerWrapEl.style.visibility = 'visible';
-                                timerWrapEl.classList.remove('anim-timer-in');
-                                void timerWrapEl.offsetWidth;
-                                timerWrapEl.classList.add('anim-timer-in');
-
-                                startQuestionTimer(data);
-                            }
-                        }, 200);
+                        startTimer(data);
                     }
 
+                    const pts = parseInt(data.points) || DEFAULT_POINTS;
                     document.getElementById('player-question-text').textContent = data.text;
-                    document.getElementById('player-question-points').textContent = `(${data.points || 1000} คะแนนเต็ม)`;
+                    document.getElementById('player-question-points').textContent = `(เต็ม ${pts} คะแนน · ยิ่งตอบเร็วยิ่งได้มาก)`;
                     const imgEl = document.getElementById('player-question-img');
-                    if(data.img) { imgEl.src = data.img; imgEl.style.display = 'block'; }
-                    else { imgEl.style.display = 'none'; }
+                    fitSmartImage(imgEl, data.img, data.imgType);
                     for(let i=1; i<=4; i++) {
-                        document.getElementById(`p-opt-${i}-label`).textContent = data[`opt${i}`];
-                        const optImg = document.getElementById(`p-opt-${i}-img`);
-                        const optImgUrl = data[`img${i}`];
-                        if(optImgUrl) {
-                            if(optImg.getAttribute('src') !== optImgUrl) optImg.src = optImgUrl;
-                            document.getElementById(`p-opt-${i}`).classList.add('has-img');
-                        } else {
-                            optImg.removeAttribute('src');
-                            document.getElementById(`p-opt-${i}`).classList.remove('has-img');
-                        }
+                        document.getElementById(`p-opt-${i}-text`).textContent = data[`opt${i}`];
                     }
 
-                    qArea.dataset.correct = data.correct;
-                    qArea.dataset.points = data.points || 1000;
-                    qArea.dataset.timeLimit = data.timeLimit || 20;
-                    qArea.dataset.endTime = data.endTime;
                     waitArea.style.display = 'none';
                     qArea.style.display = 'block';
 
-                    if(data.showAnswer) {
-                        clearInterval(timerInterval);
-                        clearInterval(prepareInterval);
-                        preparePhaseActive = false;
-                        document.getElementById('player-timer-wrap').style.visibility = 'visible';
-                        const prepBannerEl = document.getElementById('prepare-banner');
-                        prepBannerEl.style.display = 'none';
-                        prepBannerEl.classList.remove('anim-banner-out');
-                        const optsGridEl = document.getElementById('player-options-grid');
-                        if(optsGridEl.style.display === 'none') {
-                            optsGridEl.style.display = 'grid';
-                            document.querySelectorAll('#player-options-grid .option-btn').forEach((btn, i) => {
-                                btn.classList.remove('anim-option-in');
-                                btn.style.animationDelay = (i * 0.08) + 's';
-                                void btn.offsetWidth;
-                                btn.classList.add('anim-option-in');
-                            });
-                        }
-                        lockButtons();
-                        const correctNum = parseInt(data.correct);
-                        if(mySelectedOption == null && data.answers && data.answers[currentUser] != null) {
-                            mySelectedOption = parseInt(data.answers[currentUser]);
-                        }
-                        if(scoreAppliedFor !== data.questionId) {
-                            scoreAppliedFor = data.questionId;
-                            const answerAt = Number((data.answerTimes || {})[currentUser]) || myAnsweredAt;
-                            if(mySelectedOption === correctNum && answerAt) {
-                                const totalTimeMs = Math.max(1, Number(data.timeLimit) || 20) * 1000;
-                                const answerStart = Number(data.answerStartAt) || Number(data.startedAt) || (Number(data.endTime) - totalTimeMs);
-                                const elapsedMs = Math.max(0, Math.min(totalTimeMs, answerAt - answerStart));
-                                const speedFactor = 1 - ((elapsedMs / totalTimeMs) * (1 - SPEED_MIN_FACTOR));
-                                const earnedBase = Math.max(1, Math.round((data.points || 1000) * speedFactor));
-                                const newStreak = currentStreak + 1;
-                                const bonusPercent = newStreak >= 2 ? Math.min(COMBO_BASE_BONUS + (newStreak - 2) * COMBO_STEP_BONUS, COMBO_MAX_BONUS) : 0;
-                                const bonus = Math.round(earnedBase * bonusPercent);
-                                myEarnedBase = earnedBase;
-                                myBonus = bonus;
-                                update(ref(db, 'players/' + currentUser), {
-                                    score: currentScore + earnedBase + bonus,
-                                    streak: newStreak,
-                                    lastRoundPoints: earnedBase + bonus,
-                                    lastRoundCorrect: true
-                                });
-                                showFloatingPoints(earnedBase, bonus);
-                                miniConfetti();
-                            } else {
-                                myEarnedBase = 0;
-                                myBonus = 0;
-                                update(ref(db, 'players/' + currentUser), { streak: 0, lastRoundPoints: 0, lastRoundCorrect: false });
-                            }
-                        }
-                        const resultText = document.getElementById('answer-result-text');
-                        resultText.style.display = 'block';
-
-                        document.querySelectorAll('.option-btn').forEach((btn, index) => {
-                            if(index + 1 === correctNum) btn.classList.add('correct');
-                            else if(index + 1 === mySelectedOption) btn.classList.add('wrong');
-                            else btn.style.opacity = '0.3';
-                        });
-
-                        if(mySelectedOption === correctNum) {
-                            let bonusText = myBonus > 0 ? `<br><span style="font-size:14px;color:var(--gold)">🔥 โบนัสคอมโบ +${myBonus}</span>` : '';
-                            resultText.innerHTML = `ตอบถูก! ได้ ${myEarnedBase + myBonus} คะแนน 🎉${bonusText}`;
-                            resultText.style.color = "var(--success)";
-                            playSound('snd-correct');
-                        } else if(mySelectedOption) {
-                            resultText.textContent = "ตอบผิด! 😢";
-                            resultText.style.color = "var(--danger)";
-                            playSound('snd-wrong');
-                            shakeScreen('player-screen');
-                        }
+                    if(data.showAnswer && revealedFor !== data.questionId) {
+                        revealedFor = data.questionId;
+                        revealAnswer(data);
                     }
 
                 } else {
                     waitArea.style.display = 'block';
                     qArea.style.display = 'none';
                     activeQuestionId = null;
+                    currentQ = null;
                     clearInterval(timerInterval);
-                    clearInterval(prepareInterval);
-                    preparePhaseActive = false;
-                    document.getElementById('prepare-banner').style.display = 'none';
-                    document.getElementById('player-options-grid').style.display = 'none';
-                    document.getElementById('player-question-text').classList.remove('anim-question-in');
-                    document.getElementById('player-question-img').classList.remove('anim-img-in');
-                    document.getElementById('player-timer-wrap').classList.remove('anim-timer-in');
-                    document.querySelectorAll('#player-options-grid .option-btn').forEach(btn => {
-                        btn.classList.remove('anim-option-in');
-                        btn.style.animationDelay = '';
-                    });
                 }
             });
         }
 
-        function startQuestionTimer(data) {
+        // ---------- TIMER RING ----------
+        function startTimer(data) {
             clearInterval(timerInterval);
-            const timerWrap = document.getElementById('player-timer-wrap');
-            const timerDisplay = document.getElementById('player-timer');
-            const ringProgress = document.getElementById('timer-ring-progress');
-            const circumference = 2 * Math.PI * 50;
-            timerWrap.classList.remove('danger');
+            const ring = document.getElementById('timer-ring');
+            const arc = document.getElementById('timer-arc');
+            const num = document.getElementById('player-timer');
+            const live = document.getElementById('live-points');
+            const totalMs = (parseInt(data.timeLimit) || 20) * 1000;
+            const base = parseInt(data.points) || DEFAULT_POINTS;
+            let lastSec = null;
 
-            const totalTimeMs = Math.max(1, Number(data.timeLimit) || 20) * 1000;
-            const basePoints = data.points || 1000;
-            const endTime = Number(data.endTime) || (getNow() + totalTimeMs);
-            timerWrap.style.visibility = 'visible';
+            ring.classList.remove('danger');
+            arc.style.strokeDasharray = RING_C;
 
-            timerInterval = setInterval(() => {
-                const remainingMs = Math.max(0, endTime - getNow());
-                const timeLeft = Math.ceil(remainingMs / 1000);
-                timerDisplay.textContent = timeLeft;
+            const tick = () => {
+                const left = Math.max(0, data.endTime - serverNow());
+                const frac = Math.min(1, left / totalMs);
+                arc.style.strokeDashoffset = RING_C * (1 - frac);
+                const color = `hsl(${Math.round(130 * frac)}, 88%, 55%)`;
+                arc.style.stroke = color;
+                num.style.color = color;
 
-                const fraction = Math.min(1, remainingMs / totalTimeMs);
-                ringProgress.style.strokeDashoffset = circumference * (1 - fraction);
+                live.innerHTML = hasAnsweredCurrent
+                    ? 'ล็อกคำตอบแล้ว ✓'
+                    : `ตอบตอนนี้ได้ <b>${speedPoints(base, frac)}</b> คะแนน`;
 
-                const timeFraction = 1 - fraction;
-                const speedFactor = 1 - (timeFraction * (1 - SPEED_MIN_FACTOR));
-                const potential = Math.max(1, Math.round(basePoints * speedFactor));
-                document.getElementById('potential-points-val').textContent = potential;
-
-                if(timeLeft <= 5 && timeLeft > 0) {
-                    timerWrap.classList.add('danger');
-                    playSound('snd-tick');
-                }
-
-                if(timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    if(!hasAnsweredCurrent) {
-                        hasAnsweredCurrent = true;
-                        lockButtons();
-                        document.getElementById('answer-result-text').innerHTML = "หมดเวลา! ⏳<br><span style='font-size:14px;color:var(--text-muted)'>คอมโบถูกรีเซ็ต</span>";
-                        document.getElementById('answer-result-text').style.color = "var(--danger)";
-                        document.getElementById('answer-result-text').style.display = "block";
+                const secs = Math.ceil(left / 1000);
+                if(secs !== lastSec) {
+                    lastSec = secs;
+                    num.textContent = secs;
+                    if(secs <= 5 && secs > 0) {
+                        ring.classList.add('danger');
+                        playSound('snd-tick');
                     }
                 }
-            }, 200);
+
+                if(left <= 0) {
+                    clearInterval(timerInterval);
+                    ring.classList.remove('danger');
+                    markTimeout();
+                }
+            };
+            tick();
+            timerInterval = setInterval(tick, 100);
+        }
+
+        function markTimeout() {
+            if(hasAnsweredCurrent) return;
+            hasAnsweredCurrent = true;
+            lockButtons();
+            const resultText = document.getElementById('answer-result-text');
+            resultText.innerHTML = "หมดเวลา! ⏳<br><span style='font-size:14px;color:var(--text-muted)'>คอมโบถูกรีเซ็ต</span>";
+            resultText.style.color = "var(--danger)";
+            resultText.style.display = "block";
+            document.getElementById('live-points').textContent = '';
+            update(ref(db, 'players/' + currentUser), { streak: 0, lastGain: 0, lastQ: currentQ ? currentQ.questionId : null });
+        }
+
+        // ---------- REVEAL ----------
+        function revealAnswer(data) {
+            clearInterval(timerInterval);
+            document.getElementById('timer-ring').classList.remove('danger');
+            document.getElementById('live-points').textContent = '';
+            if(!hasAnsweredCurrent) markTimeout();
+            lockButtons();
+
+            const correctNum = parseInt(data.correct);
+            const resultText = document.getElementById('answer-result-text');
+            resultText.style.display = 'block';
+
+            document.querySelectorAll('.option-btn').forEach((btn, index) => {
+                btn.classList.remove('selected', 'dim');
+                if(index + 1 === correctNum) btn.classList.add('correct');
+                else if(index + 1 === mySelectedOption) btn.classList.add('wrong');
+                else btn.classList.add('dim');
+            });
+
+            if(mySelectedOption === correctNum && myEarned) {
+                const e = myEarned;
+                const comboLine = e.pct > 0
+                    ? `<br><span style="font-size:14px;color:var(--warning)">🔥 คอมโบ x${e.streak} · บูส +${e.pct}% (+${e.bonus})</span>`
+                    : '';
+                resultText.innerHTML = `ตอบถูก! 🎉 <span style="color:var(--warning)">+${e.total}</span><br><span style="font-size:14px;color:var(--text-muted)">คะแนนความเร็ว +${e.speed}</span>${comboLine}`;
+                resultText.style.color = "var(--success)";
+                playSound('snd-correct');
+                celebrate(e);
+            } else if(mySelectedOption) {
+                resultText.innerHTML = "ตอบผิด! 😢<br><span style='font-size:14px;color:var(--text-muted)'>คอมโบถูกรีเซ็ต</span>";
+                resultText.style.color = "var(--danger)";
+                playSound('snd-wrong');
+                floatScore('+0', 'bad', '');
+                shakeScreen();
+            } else {
+                playSound('snd-wrong');
+                shakeScreen();
+            }
         }
 
         function lockButtons() {
@@ -2241,148 +1809,47 @@
         }
 
         window.submitAnswer = (selectedNumber) => {
-            if(hasAnsweredCurrent) return;
-            if(preparePhaseActive) return;
+            if(hasAnsweredCurrent || !currentQ) return;
+            const q = currentQ;
+            const now = serverNow();
+            if(now > q.endTime + 300) return; // หมดเวลาแล้ว
+
             hasAnsweredCurrent = true;
             mySelectedOption = selectedNumber;
-            myAnsweredAt = getNow();
 
             lockButtons();
             document.getElementById(`p-opt-${selectedNumber}`).classList.add('selected');
             document.querySelectorAll('.option-btn').forEach((btn, idx) => {
-                if(idx + 1 !== selectedNumber) btn.style.opacity = "0.55";
+                if(idx + 1 !== selectedNumber) btn.classList.add('dim');
             });
 
-            update(ref(db, 'gameState/current'), {
-                [`answers/${currentUser}`]: selectedNumber,
-                [`answerTimes/${currentUser}`]: myAnsweredAt
-            });
+            update(ref(db, `gameState/current/answers`), { [currentUser]: selectedNumber });
 
-            const qArea = document.getElementById('question-area');
-            const correctNum = parseInt(qArea.dataset.correct);
-            const basePoints = parseInt(qArea.dataset.points) || 1000;
-            const totalTimeMs = (parseInt(qArea.dataset.timeLimit) || 20) * 1000;
-            const endTime = parseInt(qArea.dataset.endTime) || (getNow() + totalTimeMs);
-            const remainingMs = Math.max(0, endTime - getNow());
-            const timeFraction = 1 - Math.min(1, remainingMs / totalTimeMs); 
-            const speedFactor = 1 - (timeFraction * (1 - SPEED_MIN_FACTOR));
+            const correctNum = parseInt(q.correct);
+            const base = parseInt(q.points) || DEFAULT_POINTS;
+            const limitMs = (parseInt(q.timeLimit) || 20) * 1000;
 
             if(selectedNumber === correctNum) {
+                const speed = speedPoints(base, (q.endTime - now) / limitMs);
                 const newStreak = currentStreak + 1;
-                const earnedBase = Math.max(1, Math.round(basePoints * speedFactor));
-                const bonusPercent = newStreak >= 2 ? Math.min(COMBO_BASE_BONUS + (newStreak - 2) * COMBO_STEP_BONUS, COMBO_MAX_BONUS) : 0;
-                const bonus = Math.round(earnedBase * bonusPercent);
+                const pct = comboPct(newStreak);
+                const bonus = Math.round(speed * pct / 100);
+                const total = speed + bonus;
+                myEarned = { speed, pct, bonus, total, streak: newStreak };
 
-                myEarnedBase = earnedBase;
-                myBonus = bonus;
+                update(ref(db, 'players/' + currentUser), {
+                    score: increment(total),
+                    streak: newStreak,
+                    lastGain: total,
+                    lastQ: q.questionId
+                });
+                showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'success');
             } else {
-                myEarnedBase = 0;
-                myBonus = 0;
+                update(ref(db, 'players/' + currentUser), { streak: 0, lastGain: 0, lastQ: q.questionId });
+                showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'normal');
             }
-
-            showToast('ส่งคำตอบแล้ว! รอลุ้นเฉลย...', 'success');
         };
 
-        // ================= SETTINGS (GEAR) =================
-        (function setupSettings() {
-            const T = window.QuizTheme;
-            const $ = (id) => document.getElementById(id);
-            const gear = $('settings-btn'), sheet = $('settings-sheet');
-            const swatchBox = $('swatches'), customInput = $('custom-color-input'), customSwatch = $('custom-swatch');
-            const pwWrap = $('pw-wrap'), errEl = $('settings-error');
-
-            const isLoggedIn = () => isAdmin || !$('login-screen').classList.contains('active');
-
-            const refreshMode = () => {
-                sheet.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === T.getMode()));
-            };
-            const refreshAccent = () => {
-                const cur = T.getAccent();
-                swatchBox.querySelectorAll('.swatch').forEach(b => b.classList.toggle('active', b.dataset.key === cur));
-                const isCustom = cur.startsWith('custom:');
-                customSwatch.classList.toggle('active', isCustom);
-                customInput.value = isCustom ? cur.slice(7) : (T.PRESETS[cur] ? T.PRESETS[cur].c : '#00e5ff');
-            };
-
-            sheet.querySelectorAll('.seg-btn').forEach(b => b.addEventListener('click', () => { T.applyMode(b.dataset.mode); refreshMode(); }));
-            Object.keys(T.PRESETS).forEach(key => {
-                const p = T.PRESETS[key];
-                const b = document.createElement('button');
-                b.className = 'swatch'; b.dataset.key = key; b.title = p.name; b.setAttribute('aria-label', 'สี' + p.name);
-                b.style.background = `linear-gradient(135deg, ${p.c}, ${p.c2})`;
-                b.addEventListener('click', () => { T.applyAccent(key); refreshAccent(); });
-                swatchBox.insertBefore(b, customSwatch);
-            });
-            customInput.addEventListener('input', (e) => { T.applyAccent('custom:' + e.target.value); refreshAccent(); });
-
-            const collapsePw = () => {
-                pwWrap.style.display = 'none';
-                ['cp-old', 'cp-new', 'cp-new2', 'pin-old', 'pin-new', 'pin-new2'].forEach(id => $(id).value = '');
-                errEl.textContent = '';
-            };
-
-            const openSheet = () => {
-                const logged = isLoggedIn();
-                $('account-section').style.display = logged ? 'block' : 'none';
-                if(logged) {
-                    $('set-user-name').textContent = isAdmin ? 'แอดมิน' : currentUser;
-                    $('pw-btn-text').textContent = isAdmin ? 'เปลี่ยน PIN แอดมิน' : 'เปลี่ยนรหัสผ่าน';
-                    $('pw-form').style.display = isAdmin ? 'none' : 'block';
-                    $('pin-form').style.display = isAdmin ? 'block' : 'none';
-                }
-                collapsePw();
-                refreshMode(); refreshAccent();
-                sheet.classList.add('active');
-                gear.classList.add('open');
-                document.documentElement.classList.add('sheet-open');
-            };
-            const closeSheet = () => {
-                sheet.classList.remove('active');
-                gear.classList.remove('open');
-                document.documentElement.classList.remove('sheet-open');
-            };
-
-            gear.addEventListener('click', () => sheet.classList.contains('active') ? closeSheet() : openSheet());
-            $('sheet-close').addEventListener('click', closeSheet);
-            sheet.addEventListener('click', (e) => { if(e.target === sheet) closeSheet(); });
-            document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeSheet(); });
-
-            $('toggle-pw-btn').addEventListener('click', () => {
-                const show = pwWrap.style.display === 'none';
-                pwWrap.style.display = show ? 'block' : 'none';
-                errEl.textContent = '';
-                if(show) setTimeout(() => $(isAdmin ? 'pin-old' : 'cp-old').focus(), 50);
-            });
-
-            $('logout-btn').addEventListener('click', () => { closeSheet(); window.logout(); });
-
-            $('settings-save').addEventListener('click', async () => {
-                errEl.textContent = '';
-                try {
-                    if(isAdmin) {
-                        const oldPin = $('pin-old').value, newPin = $('pin-new').value, newPin2 = $('pin-new2').value;
-                        if(oldPin !== await getAdminPin()) { errEl.textContent = 'PIN ปัจจุบันไม่ถูกต้อง'; return; }
-                        if(!/^\d{4,6}$/.test(newPin)) { errEl.textContent = 'PIN ใหม่ต้องเป็นตัวเลข 4-6 หลัก'; return; }
-                        if(newPin !== newPin2) { errEl.textContent = 'PIN ยืนยันไม่ตรงกัน'; return; }
-                        await set(ref(db, 'settings/adminPin'), newPin);
-                        showToast('เปลี่ยน PIN แอดมินสำเร็จ', 'success');
-                    } else {
-                        const oldPass = $('cp-old').value, newPass = $('cp-new').value, newPass2 = $('cp-new2').value;
-                        const snap = await get(ref(db, 'members/' + currentUser));
-                        if(!snap.exists() || snap.val().password !== oldPass) { errEl.textContent = 'รหัสผ่านปัจจุบันไม่ถูกต้อง'; return; }
-                        if(newPass.length < 4) { errEl.textContent = 'รหัสผ่านใหม่ต้องยาวอย่างน้อย 4 ตัวอักษร'; return; }
-                        if(newPass !== newPass2) { errEl.textContent = 'รหัสผ่านยืนยันไม่ตรงกัน'; return; }
-                        if(newPass === oldPass) { errEl.textContent = 'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสเดิม'; return; }
-                        await update(ref(db, 'members/' + currentUser), { password: newPass });
-                        saveSession(currentUser, newPass);
-                        showToast('เปลี่ยนรหัสผ่านสำเร็จ', 'success');
-                    }
-                    collapsePw();
-                } catch(err) {
-                    errEl.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
-                }
-            });
-        })();
     </script>
 </body>
 </html>
