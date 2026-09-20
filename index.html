@@ -1170,7 +1170,6 @@
             
             data.timeLimit = Math.max(1, parseInt(data.timeLimit, 10) || 20);
             
-            // อ้างอิงเวลาปัจจุบันที่ตรงกับเครื่อง Server จริงๆ เสมอ
             const now = getNow();
             const prepareUntil = now + PREPARE_DURATION_MS;
             data.prepareUntil = prepareUntil;
@@ -1199,7 +1198,8 @@
             try {
                 const queueSnap = await get(ref(db, 'questions'));
                 if(!queueSnap.exists()) {
-                    await set(ref(db, 'gameState/current'), { active: false });
+                    // หากคำถามหมด ให้กลับสู่สถานะรอ และปิดกระดานสรุปคะแนน
+                    await set(ref(db, 'gameState'), { current: { active: false }, podium: false, summary: { active: false } });
                     showToast('จบรอบนี้แล้ว — ยังไม่มีคำถามถัดไปในคิว', 'normal');
                     return;
                 }
@@ -1374,25 +1374,27 @@
                 }
             });
 
-            // Auto-engine
+            // ================= AUTO-ENGINE FIXED =================
             if(autoEngineStarted) return;
             autoEngineStarted = true;
             setInterval(() => {
+                // บล็อคป้องกัน! ให้แอดมินเท่านั้นที่เป็นคนสั่งอัพเดทสถานะลง Firebase ป้องกันระบบตีกัน
+                if(!isAdmin) return; 
+
                 if(!liveCurrentState || !liveCurrentState.active) return;
                 
-                // ใช้อ้างอิงเวลาที่ซิงค์กับเซิร์ฟเวอร์
                 const now = getNow();
 
+                // 1. สั่งเปิดเฉลยอัตโนมัติ
                 if(!liveCurrentState.showAnswer
                    && liveCurrentState.answerStartAt
-                   && now >= liveCurrentState.answerStartAt
-                   && liveCurrentState.endTime
                    && now >= liveCurrentState.endTime
                    && autoRevealedFor !== liveCurrentState.questionId) {
                     autoRevealedFor = liveCurrentState.questionId;
                     update(ref(db, 'gameState/current'), { showAnswer: true, revealedAt: now, summaryAt: now + REVEAL_TO_SUMMARY_MS }).catch(()=>{});
                 }
 
+                // 2. สั่งเปิดหน้าสรุปคะแนน
                 if(liveCurrentState.showAnswer && liveCurrentState.revealedAt
                    && now >= (liveCurrentState.summaryAt || (liveCurrentState.revealedAt + REVEAL_TO_SUMMARY_MS))
                    && (!liveSummaryState || !liveSummaryState.active)
@@ -1401,14 +1403,15 @@
                     update(ref(db, 'gameState/summary'), { active: true, questionId: liveCurrentState.questionId, ts: now }).catch(()=>{});
                 }
 
+                // 3. ปิดหน้าสรุปคะแนน และไปข้อถัดไป
                 if(liveSummaryState && liveSummaryState.active && liveSummaryState.ts
                    && now >= liveSummaryState.ts + SUMMARY_DURATION_MS
                    && summaryHiddenFor !== liveSummaryState.questionId) {
                     summaryHiddenFor = liveSummaryState.questionId;
                     const completedQuestionId = liveSummaryState.questionId;
-                    set(ref(db, 'gameState/summary'), { active: false, completedAt: now })
-                        .then(() => advanceToNextQuestion(completedQuestionId))
-                        .catch(()=>{});
+                    
+                    // ให้แอดมินเรียกฟังก์ชันนี้เพื่อจัดการเคลียร์ค่า และเปิดข้อใหม่
+                    advanceToNextQuestion(completedQuestionId);
                 }
             }, 500);
 
