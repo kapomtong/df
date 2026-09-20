@@ -1261,9 +1261,12 @@
             data.revealedAt = null;
             // เวลาเริ่มจริงถูกกำหนดจาก Admin เพียงครั้งเดียว ทุก client จึงเห็น deadline เดียวกัน
             data.timeLimit = Math.max(1, parseInt(data.timeLimit, 10) || 20);
-            // startedAt คือเวลาที่ช้อยส์ขึ้นและเริ่มจับเวลาจริง ไม่รวมช่วงเตรียมตัว 3 วินาที
-            data.startedAt = Date.now() + PREPARE_DURATION_MS;
-            data.endTime = data.startedAt + (data.timeLimit * 1000);
+            // แยก deadline ให้ชัดเจน: 3 วิเตรียมตัว -> เริ่มตอบ -> หมดเวลาตอบ
+            const prepareUntil = Date.now() + PREPARE_DURATION_MS;
+            data.prepareUntil = prepareUntil;
+            data.answerStartAt = prepareUntil;
+            data.startedAt = prepareUntil; // compatibility กับข้อมูลเวอร์ชันเก่า
+            data.endTime = prepareUntil + (data.timeLimit * 1000);
 
             // รีเซ็ตคะแนนของรอบก่อนหน้า เพื่อให้กระดานสรุปคะแนนของรอบใหม่ถูกต้อง
             const playersSnap = await get(ref(db, 'players'));
@@ -1477,7 +1480,11 @@
                 if(!liveCurrentState || !liveCurrentState.active) return;
                 const now = Date.now();
 
-                if(!liveCurrentState.showAnswer && liveCurrentState.endTime && now >= liveCurrentState.endTime
+                if(!liveCurrentState.showAnswer
+                   && liveCurrentState.answerStartAt
+                   && now >= liveCurrentState.answerStartAt
+                   && liveCurrentState.endTime
+                   && now >= liveCurrentState.endTime
                    && autoRevealedFor !== liveCurrentState.questionId) {
                     autoRevealedFor = liveCurrentState.questionId;
                     update(ref(db, 'gameState/current'), { showAnswer: true, revealedAt: now, summaryAt: now + REVEAL_TO_SUMMARY_MS }).catch(()=>{});
@@ -1512,10 +1519,15 @@
 
                 if(snapshot.exists() && snapshot.val().active) {
                     const data = snapshot.val();
-                    // รองรับคำถามที่สร้างด้วยเวอร์ชันเก่า และป้องกัน timer ได้ค่า NaN
+                    // รองรับคำถามเก่า: สร้าง deadline ชุดใหม่ที่แยกจากช่วงเตรียมตัว
                     data.timeLimit = Math.max(1, parseInt(data.timeLimit, 10) || 20);
-                    if(!Number(data.startedAt)) data.startedAt = Date.now() + PREPARE_DURATION_MS;
-                    if(!Number(data.endTime)) data.endTime = data.startedAt + (data.timeLimit * 1000);
+                    if(!Number(data.answerStartAt)) {
+                        data.answerStartAt = Number(data.startedAt) || (Date.now() + PREPARE_DURATION_MS);
+                    }
+                    if(!Number(data.prepareUntil)) data.prepareUntil = data.answerStartAt;
+                    if(!Number(data.endTime) || data.endTime <= data.answerStartAt) {
+                        data.endTime = data.answerStartAt + (data.timeLimit * 1000);
+                    }
 
                     if(activeQuestionId !== data.questionId) {
                         hasAnsweredCurrent = false;
@@ -1540,7 +1552,8 @@
                         const ringProgress = document.getElementById('timer-ring-progress');
                         const circumference = 2 * Math.PI * 50;
                         timerWrap.classList.remove('danger');
-                        timerDisplay.textContent = data.timeLimit || 20;
+                        timerWrap.style.visibility = 'hidden';
+                        timerDisplay.textContent = '—';
                         ringProgress.style.strokeDashoffset = 0;
 
                         // ---- PHASE 1: แสดงโจทย์ล้วน 3 วินาที ก่อนช้อยส์ขึ้น ----
@@ -1565,7 +1578,7 @@
                         if(imgElPre.style.display !== 'none') imgElPre.classList.add('anim-img-in');
 
                         // ใช้เวลาที่อยู่ใน Firebase เป็นหลัก ห้ามเริ่มนับใหม่ตามเวลาที่ listener ทำงาน
-                        const questionStartAt = Number(data.startedAt) || (Date.now() + PREPARE_DURATION_MS);
+                        const questionStartAt = Number(data.prepareUntil) || Number(data.answerStartAt) || (Date.now() + PREPARE_DURATION_MS);
                         let prepRemaining = Math.ceil(PREPARE_DURATION_MS / 1000);
                         prepCountdown.textContent = prepRemaining;
 
@@ -1595,6 +1608,7 @@
 
                                 // วงจับเวลาหล่นลงมา
                                 const timerWrapEl = document.getElementById('player-timer-wrap');
+                                timerWrapEl.style.visibility = 'visible';
                                 timerWrapEl.classList.remove('anim-timer-in');
                                 void timerWrapEl.offsetWidth;
                                 timerWrapEl.classList.add('anim-timer-in');
@@ -1624,6 +1638,7 @@
                         clearInterval(timerInterval);
                         clearInterval(prepareInterval);
                         preparePhaseActive = false;
+                        document.getElementById('player-timer-wrap').style.visibility = 'visible';
                         const prepBannerEl = document.getElementById('prepare-banner');
                         prepBannerEl.style.display = 'none';
                         prepBannerEl.classList.remove('anim-banner-out');
@@ -1649,7 +1664,7 @@
                             const answerAt = Number((data.answerTimes || {})[currentUser]) || myAnsweredAt;
                             if(mySelectedOption === correctNum && answerAt) {
                                 const totalTimeMs = Math.max(1, Number(data.timeLimit) || 20) * 1000;
-                                const answerStart = Number(data.startedAt) || (Number(data.endTime) - totalTimeMs);
+                                const answerStart = Number(data.answerStartAt) || Number(data.startedAt) || (Number(data.endTime) - totalTimeMs);
                                 const elapsedMs = Math.max(0, Math.min(totalTimeMs, answerAt - answerStart));
                                 const speedFactor = 1 - ((elapsedMs / totalTimeMs) * (1 - SPEED_MIN_FACTOR));
                                 const earnedBase = Math.max(1, Math.round((data.points || 1000) * speedFactor));
@@ -1727,6 +1742,7 @@
             const totalTimeMs = Math.max(1, Number(data.timeLimit) || 20) * 1000;
             const basePoints = data.points || 1000;
             const endTime = Number(data.endTime) || (Date.now() + totalTimeMs);
+            timerWrap.style.visibility = 'visible';
 
             timerInterval = setInterval(() => {
                 const remainingMs = Math.max(0, endTime - Date.now());
